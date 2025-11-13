@@ -1,0 +1,204 @@
+/* Tailwind entry file - frontend/src/styles/tailwind.css */
+
+/* 1) Tailwind layers (required) */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 2) Project-wide custom properties (colors, spacing, etc.) */
+:root {
+  --brand-50: #eef2ff;
+  --brand-100: #e0e7ff;
+  --brand-200: #c7d2fe;
+  --brand-500: #6366f1; /* indigo-500 */
+  --brand-600: #4f46e5;
+  --muted: #6b7280;
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --bg: #ffffff;
+  --card-bg: #ffffff;
+  --text: #111827;
+  --subtext: #6b7280;
+}
+
+/* Dark mode variables */
+:root.dark,
+html.dark {
+  --bg: #0b1220;
+  --card-bg: #0f1724;
+  --text: #e6edf3;
+  --subtext: #9aa6b2;
+  --brand-50: #0f1724;
+  --brand-100: #0b1220;
+}
+
+/* 3) Small base component tweaks */
+@layer base {
+  /* Normalize fonts slightly */
+  html {
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+      Roboto, "Helvetica Neue", Arial;
+    background-color: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--bg);
+    color: var(--text);
+  }
+
+  /* Set default link styles */
+  a {
+    color: var(--brand-600);
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  /* Form elements */
+  input,
+  select,
+  textarea,
+  button {
+    font-family: inherit;
+  }
+
+  /* Simple visually-hidden helper */
+  .sr-only {
+    position: absolute !important;
+    height: 1px;
+    width: 1px;
+    overflow: hidden;
+    clip: rect(1px, 1px, 1px, 1px);
+    white-space: nowrap;
+  }
+}
+
+/* 4) Custom components added to Tailwind components layer */
+@layer components {
+  .card {
+    @apply rounded-lg shadow-sm p-4 bg-[var(--card-bg)];
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-md font-medium;
+  }
+
+  .btn-primary {
+    background-color: var(--brand-600);
+    color: white;
+  }
+  .btn-primary:hover {
+    filter: brightness(0.95);
+  }
+
+  .input {
+    @apply block w-full rounded-md border px-3 py-2 bg-white text-sm;
+    border-color: rgba(15, 23, 42, 0.08);
+  }
+
+  .table {
+    @apply w-full text-left border-collapse;
+  }
+
+  /* small badges */
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold;
+  }
+  .badge-success {
+    background-color: #dcfce7;
+    color: #14532d;
+  }
+  .badge-danger {
+    background-color: #fee2e2;
+    color: #7f1d1d;
+  }
+
+  /* responsive container used in dashboards */
+  .card-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+  @media (min-width: 768px) {
+    .card-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 1280px) {
+    .card-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+}
+
+/* 5) Utilities layer: small helper utilities & animations */
+@layer utilities {
+  /* Loading spinner helper (used in LoadingSpinner.jsx) */
+  .spin {
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Fade in animation used by dialog, cards etc. */
+  .animate-fadeIn {
+    animation: fadeIn 240ms ease-out both;
+  }
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Tiny shadow utility for emphasis */
+  .soft-shadow {
+    box-shadow: 0 6px 18px rgba(13, 17, 23, 0.06);
+  }
+
+  /* small responsive helpers */
+  .truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+/* 6) Accessibility helpers */
+@layer base {
+  /* Focus ring for keyboard users */
+  :focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18);
+    border-radius: 6px;
+  }
+}
+
+/* 7) Small print / preformatted styling for exported JSON preview */
+pre {
+  background: linear-gradient(180deg, rgba(15,23,42,0.02), rgba(15,23,42,0.02));
+  padding: 12px;
+  border-radius: 8px;
+  overflow: auto;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--subtext);
+}

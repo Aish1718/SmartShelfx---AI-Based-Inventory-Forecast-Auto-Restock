@@ -1,0 +1,59 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Docker.backend
+    container_name: smartshelfx-backend
+    ports:
+      - "8080:8080"
+    env_file:
+      - ../backend/.env
+    depends_on:
+      - db
+      - ai-service
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Docker.frontend
+    container_name: smartshelfx-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+  ai-service:
+    build:
+      context: ../ai-service
+      dockerfile: Docker.ai-service
+    container_name: smartshelfx-ai
+    ports:
+      - "8000:8000"
+
+  db:
+    image: mysql:8.0
+    container_name: smartshelfx-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: smartshelfx
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: smartshelfx-phpmyadmin
+    environment:
+      PMA_HOST: db
+    ports:
+      - "8081:80"
+    depends_on:
+      - db
+
+volumes:
+  db_data:
