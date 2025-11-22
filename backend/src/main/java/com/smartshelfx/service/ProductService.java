@@ -103,6 +103,7 @@ public class ProductService {
         product.setCategory(dto.getCategory());
         product.setPrice(dto.getPrice());
         product.setDescription(dto.getDescription());
+        product.setImageUrl(dto.getImageUrl());
 
         if (dto.getVendorId() != null) {
             User vendor = userRepository.findById(dto.getVendorId())

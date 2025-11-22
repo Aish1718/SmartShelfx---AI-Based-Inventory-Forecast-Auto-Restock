@@ -1,6 +1,6 @@
 package com.smartshelfx.dto;
 
-import com.smartshelfx.model.enums.Role;
+// import com.smartshelfx.model.enums.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -19,5 +19,5 @@ public class RegisterRequest {
     private String password;
 
     @NotNull(message = "Role is required")
-    private Role role;
+    private String role;
 }

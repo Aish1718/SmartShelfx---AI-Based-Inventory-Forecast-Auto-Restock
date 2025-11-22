@@ -31,4 +31,6 @@ public class ProductDTO {
     private Double price;
 
     private String description;
+
+    private String imageUrl;
 }

@@ -35,6 +35,9 @@ const ProductTable = ({ products, onEdit, onDelete, loading }) => {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Image
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 SKU
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -63,8 +66,25 @@ const ProductTable = ({ products, onEdit, onDelete, loading }) => {
           <tbody className="bg-white divide-y divide-gray-200">
             {products.map((product) => {
               const status = getStockStatus(product);
+              // Get image URL - if relative, prefix with backend URL
+              const getImageUrl = (imageUrl) => {
+                if (!imageUrl) return "http://localhost:8080/no-image.png";
+                if (imageUrl.startsWith('http')) return imageUrl;
+                return `http://localhost:8080${imageUrl}`;
+              };
+
               return (
                 <tr key={product.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <img
+                      src={getImageUrl(product.imageUrl)}
+                      alt={product.name}
+                      className="w-16 h-16 object-cover rounded-lg border"
+                      onError={(e) => {
+                        e.target.src = "http://localhost:8080/no-image.png";
+                      }}
+                    />
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {product.sku}
                   </td>

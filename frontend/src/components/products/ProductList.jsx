@@ -230,6 +230,7 @@ FOOD001,Organic Apples 1kg,Food,100,20,4.99,Fresh organic apples`;
           onSuccess={fetchProducts}
         />
       )}
+
     </div>
   );
 };

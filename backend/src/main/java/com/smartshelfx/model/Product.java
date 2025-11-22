@@ -27,6 +27,9 @@ public class Product {
     @JoinColumn(name = "vendor_id")
     private User vendor;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     private Integer reorderLevel;
     private Integer currentStock;
     private String category;
@@ -36,8 +39,10 @@ public class Product {
     private String description;
 
     @CreationTimestamp
+    @Column(name = "createdAt", updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
+    @Column(name = "updatedAt")
     private LocalDateTime updatedAt;
 }

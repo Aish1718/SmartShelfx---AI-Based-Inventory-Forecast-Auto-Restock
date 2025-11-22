@@ -16,6 +16,7 @@ public class AlertDTO {
     private String productSku;
     private AlertType alertType;
     private String message;
+    private String type;  // LOW_STOCK, EXPIRY, SYSTEM
     private String severity;
     private Boolean isRead;
     private Boolean isDismissed;

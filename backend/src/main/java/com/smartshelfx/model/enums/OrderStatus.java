@@ -5,5 +5,6 @@ public enum OrderStatus {
     APPROVED,     // Vendor approved the order
     DISPATCHED,   // Order shipped by vendor
     DELIVERED,    // Order received
+    RECEIVED,
     CANCELLED     // Order cancelled
 }

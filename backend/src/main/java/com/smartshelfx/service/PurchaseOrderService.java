@@ -108,55 +108,145 @@ public class PurchaseOrderService {
                 .collect(Collectors.toList());
     }
 
+    // @Transactional
+    // public PurchaseOrderDTO updateOrderStatus(Long id, OrderStatusUpdateDTO updateDTO) {
+    //     PurchaseOrder po = poRepository.findById(id)
+    //             .orElseThrow(() -> new ResourceNotFoundException("Purchase order not found"));
+
+    //     // Get current user
+    //     UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext()
+    //             .getAuthentication().getPrincipal();
+    //     User currentUser = userRepository.findById(userPrincipal.getId())
+    //             .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+    //     OrderStatus oldStatus = po.getStatus();
+    //     po.setStatus(updateDTO.getStatus());
+
+    //     if (updateDTO.getNotes() != null) {
+    //         po.setNotes(updateDTO.getNotes());
+    //     }
+
+    //     // Handle status-specific logic
+    //     switch (updateDTO.getStatus()) {
+    //         case APPROVED:
+    //             po.setApprovedBy(currentUser);
+    //             po.setApprovedAt(LocalDateTime.now());
+    //             break;
+
+    //         case DELIVERED:
+    //             po.setActualDelivery(updateDTO.getActualDelivery() != null ?
+    //                                 updateDTO.getActualDelivery() :
+    //                                 LocalDate.now());
+    //             // Auto-create Stock IN transaction
+    //             createStockInTransaction(po);
+    //             break;
+
+    //         case CANCELLED:
+    //             // Nothing specific to do
+    //             break;
+    //     }
+
+    //     PurchaseOrder updatedPO = poRepository.save(po);
+
+    //     // Send status update email
+    //     try {
+    //         emailService.sendOrderStatusUpdate(updatedPO, oldStatus);
+    //     } catch (Exception e) {
+    //         System.err.println("Failed to send email: " + e.getMessage());
+    //     }
+
+    //     return convertToDTO(updatedPO);
+    // }
+
     @Transactional
-    public PurchaseOrderDTO updateOrderStatus(Long id, OrderStatusUpdateDTO updateDTO) {
-        PurchaseOrder po = poRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Purchase order not found"));
+public PurchaseOrderDTO updateOrderStatus(Long id, OrderStatusUpdateDTO updateDTO) {
 
-        // Get current user
-        UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext()
-                .getAuthentication().getPrincipal();
-        User currentUser = userRepository.findById(userPrincipal.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    PurchaseOrder po = poRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Purchase order not found"));
 
-        OrderStatus oldStatus = po.getStatus();
-        po.setStatus(updateDTO.getStatus());
+    // Get logged-in user
+    UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext()
+            .getAuthentication().getPrincipal();
 
-        if (updateDTO.getNotes() != null) {
-            po.setNotes(updateDTO.getNotes());
+    User currentUser = userRepository.findById(userPrincipal.getId())
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+    Role role = currentUser.getRole();
+    OrderStatus newStatus = updateDTO.getStatus();
+    OrderStatus oldStatus = po.getStatus();
+
+    // ===============================
+    // ROLE VALIDATION LOGIC
+    // ===============================
+
+    if (role == Role.MANAGER) {
+        // MANAGER can ONLY set RECEIVED or CANCELLED
+        if (!(newStatus == OrderStatus.RECEIVED || newStatus == OrderStatus.CANCELLED)) {
+            throw new BadRequestException("Managers can only update the order to RECEIVED or CANCELLED.");
         }
-
-        // Handle status-specific logic
-        switch (updateDTO.getStatus()) {
-            case APPROVED:
-                po.setApprovedBy(currentUser);
-                po.setApprovedAt(LocalDateTime.now());
-                break;
-
-            case DELIVERED:
-                po.setActualDelivery(updateDTO.getActualDelivery() != null ?
-                                    updateDTO.getActualDelivery() :
-                                    LocalDate.now());
-                // Auto-create Stock IN transaction
-                createStockInTransaction(po);
-                break;
-
-            case CANCELLED:
-                // Nothing specific to do
-                break;
-        }
-
-        PurchaseOrder updatedPO = poRepository.save(po);
-
-        // Send status update email
-        try {
-            emailService.sendOrderStatusUpdate(updatedPO, oldStatus);
-        } catch (Exception e) {
-            System.err.println("Failed to send email: " + e.getMessage());
-        }
-
-        return convertToDTO(updatedPO);
     }
+
+    if (role == Role.VENDOR) {
+        // VENDOR can set APPROVED, DISPATCHED, DELIVERED only
+        if (!(newStatus == OrderStatus.APPROVED ||
+                newStatus == OrderStatus.DISPATCHED ||
+                newStatus == OrderStatus.DELIVERED)) {
+
+            throw new BadRequestException("Vendors cannot set this status.");
+        }
+    }
+
+    // ADMIN bypasses validation (can do anything)
+    // ===============================
+
+    // APPLY CHANGES
+    po.setStatus(newStatus);
+
+    if (updateDTO.getNotes() != null) {
+        po.setNotes(updateDTO.getNotes());
+    }
+
+    // STATUS SPECIFIC LOGIC
+    switch (newStatus) {
+        case APPROVED:
+            po.setApprovedBy(currentUser);
+            po.setApprovedAt(LocalDateTime.now());
+            break;
+
+        case DELIVERED:
+            po.setActualDelivery(
+                    updateDTO.getActualDelivery() != null
+                            ? updateDTO.getActualDelivery()
+                            : LocalDate.now()
+            );
+            createStockInTransaction(po); // Auto stock-in on delivery
+            break;
+
+        case RECEIVED:
+            // Manager-only action (mark item as received)
+            po.setActualDelivery(LocalDate.now());
+            break;
+
+        case CANCELLED:
+            // No additional logic
+            break;
+    }
+
+    PurchaseOrder updatedPO = poRepository.save(po);
+
+    // Send notification email
+    try {
+        emailService.sendOrderStatusUpdate(updatedPO, oldStatus);
+    } catch (Exception e) {
+        System.err.println("Failed to send email: " + e.getMessage());
+    }
+
+    return convertToDTO(updatedPO);
+}
+
+
+
+
 
     @Transactional
     public void deletePurchaseOrder(Long id) {

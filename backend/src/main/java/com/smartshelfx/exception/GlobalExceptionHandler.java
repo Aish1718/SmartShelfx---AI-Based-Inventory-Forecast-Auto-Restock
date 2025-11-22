@@ -2,6 +2,7 @@ package com.smartshelfx.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -43,5 +44,29 @@ public class GlobalExceptionHandler {
             errors.put(fieldName, errorMessage);
         });
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, String>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        Map<String, String> error = new HashMap<>();
+        String message = ex.getMessage();
+        if (message != null && message.contains("email")) {
+            error.put("error", "Email already exists");
+        } else if (message != null && message.contains("constraint")) {
+            error.put("error", "Data constraint violation. Please check your input.");
+        } else {
+            error.put("error", "Data integrity violation: " + ex.getMostSpecificCause().getMessage());
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, String>> handleGenericException(Exception ex) {
+        Map<String, String> error = new HashMap<>();
+        // Log the full exception for debugging
+        ex.printStackTrace();
+        error.put("error", "An internal server error occurred: " + ex.getMessage());
+        error.put("type", ex.getClass().getSimpleName());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
 }

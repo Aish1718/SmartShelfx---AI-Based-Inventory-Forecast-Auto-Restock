@@ -35,7 +35,20 @@ const Register = () => {
       await register(registerData);
       navigate('/login');
     } catch (err) {
-      setError(err.response?.data?.error || 'Registration failed');
+      // Handle different error formats
+      const errorMessage = err.message ||
+                           err.response?.data?.error ||
+                           err.response?.data?.message ||
+                           'Registration failed. Please try again.';
+      setError(errorMessage);
+
+      // Log error for debugging
+      console.error('Registration error:', {
+        message: err.message,
+        response: err.response?.data,
+        code: err.code,
+        stack: err.stack
+      });
     } finally {
       setLoading(false);
     }
@@ -94,6 +107,8 @@ const Register = () => {
               >
                 <option value="MANAGER">Warehouse Manager</option>
                 <option value="VENDOR">Vendor</option>
+                <option value="BUYER">Buyer</option>
+                <option value="ADMIN">Admin</option>
               </select>
             </div>
 

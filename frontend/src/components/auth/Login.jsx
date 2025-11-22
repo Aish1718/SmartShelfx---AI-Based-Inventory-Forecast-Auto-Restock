@@ -20,7 +20,20 @@ const Login = () => {
       await login(email, password);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.error || 'Invalid email or password');
+      // Handle different error formats
+      const errorMessage = err.message ||
+                           err.response?.data?.error ||
+                           err.response?.data?.message ||
+                           'Invalid email or password';
+      setError(errorMessage);
+
+      // Log error for debugging
+      console.error('Login error:', {
+        message: err.message,
+        response: err.response?.data,
+        code: err.code,
+        stack: err.stack
+      });
     } finally {
       setLoading(false);
     }

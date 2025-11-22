@@ -5,6 +5,7 @@ import com.smartshelfx.dto.LoginResponse;
 import com.smartshelfx.dto.RegisterRequest;
 import com.smartshelfx.exception.BadRequestException;
 import com.smartshelfx.model.User;
+import com.smartshelfx.model.enums.Role;
 import com.smartshelfx.repository.UserRepository;
 import com.smartshelfx.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -42,18 +43,43 @@ public class AuthService {
 
     @Transactional
     public String register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new BadRequestException("Email already exists");
+        try {
+            // Validate email
+            if (userRepository.existsByEmail(request.getEmail())) {
+                throw new BadRequestException("Email already exists");
+            }
+
+            // Validate role
+            if (request.getRole() == null || request.getRole().trim().isEmpty()) {
+                throw new BadRequestException("Role is required");
+            }
+
+            // Create user
+            User user = new User();
+            user.setName(request.getName());
+            user.setEmail(request.getEmail());
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+
+            // Convert string → ROLE ENUM
+            try {
+                user.setRole(Role.valueOf(request.getRole().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                throw new BadRequestException("Invalid role: " + request.getRole() + ". Valid roles are: ADMIN, MANAGER, VENDOR, BUYER");
+            }
+
+            user.setIsActive(true);
+
+            // Save user
+            userRepository.save(user);
+            return "User registered successfully";
+        } catch (BadRequestException e) {
+            // Re-throw BadRequestException as-is
+            throw e;
+        } catch (Exception e) {
+            // Log the full exception for debugging
+            e.printStackTrace();
+            throw new BadRequestException("Registration failed: " + e.getMessage());
         }
-
-        User user = new User();
-        user.setName(request.getName());
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(request.getRole());
-        user.setIsActive(true);
-
-        userRepository.save(user);
-        return "User registered successfully";
     }
+
 }

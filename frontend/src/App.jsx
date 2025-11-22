@@ -1,30 +1,40 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
+import LandingPage from "./components/landing/LandingPage";
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
-import Dashboard from './components/dashboard/Dashboard';
-import ProductList from './components/products/ProductList';
-import StockIn from './components/transactions/StockIn';
-import StockOut from './components/transactions/StockOut';
-import TransactionHistory from './components/transactions/TransactionHistory';
-import ForecastDashboard from './components/forecast/ForecastDashboard';
-import PurchaseOrderList from './components/purchase-orders/PurchaseOrderList';
-import AlertList from './components/alerts/AlertList';
-import AnalyticsDashboard from './components/analytics/AnalyticsDashboard';
-import Navbar from './components/common/Navbar';
-import Sidebar from './components/common/Sidebar';
-import ProtectedRoute from './components/auth/ProtectedRoute';
-import './index.css';
 
-// Layout wrapper for authenticated pages
+
+import { AuthProvider } from "./context/AuthContext";
+import Dashboard from "./components/dashboard/Dashboard";
+import ProductList from "./components/products/ProductList";
+import StockIn from "./components/transactions/StockIn";
+import StockOut from "./components/transactions/StockOut";
+import TransactionHistory from "./components/transactions/TransactionHistory";
+import ForecastDashboard from "./components/forecast/ForecastDashboard";
+import PurchaseOrderList from "./components/purchase-orders/PurchaseOrderList";
+import AlertList from "./components/alerts/AlertList";
+import AnalyticsDashboard from "./components/analytics/AnalyticsDashboard";
+import Navbar from "./components/common/Navbar";
+import Sidebar from "./components/common/Sidebar";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+
+// import BuyerLayout from "./components/buyer/BuyerLayout";
+// import BuyerHome from "./components/buyer/BuyerHome";
+// import WishlistPage from "./components/buyer/WishlistPage";
+// import PurchaseHistory from "./components/buyer/PurchaseHistory";
+
+import VendorDashboard from './components/vendor/dashboard/VendorDashboard';
+
+import "./index.css";
+
+// Main admin layout
 const Layout = ({ children }) => (
   <div className="min-h-screen bg-gray-50">
     <Navbar />
     <Sidebar />
-    <div className="ml-64 pt-20">
-      {children}
-    </div>
+    <div className="ml-64 pt-20">{children}</div>
   </div>
 );
 
@@ -33,11 +43,14 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          {/* Public Routes */}
+
+          {/* PUBLIC ROUTES */}
+          <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* Protected Routes */}
+
+          {/* ADMIN / MANAGER PROTECTED ROUTES */}
           <Route
             path="/dashboard"
             element={
@@ -52,7 +65,7 @@ function App() {
           <Route
             path="/products"
             element={
-              <ProtectedRoute roles={['ADMIN', 'MANAGER']}>
+              <ProtectedRoute roles={["ADMIN", "MANAGER"]}>
                 <Layout>
                   <ProductList />
                 </Layout>
@@ -63,7 +76,7 @@ function App() {
           <Route
             path="/transactions"
             element={
-              <ProtectedRoute roles={['ADMIN', 'MANAGER']}>
+              <ProtectedRoute roles={["ADMIN", "MANAGER"]}>
                 <Layout>
                   <TransactionHistory />
                 </Layout>
@@ -74,7 +87,7 @@ function App() {
           <Route
             path="/transactions/stock-in"
             element={
-              <ProtectedRoute roles={['ADMIN', 'MANAGER']}>
+              <ProtectedRoute roles={["ADMIN", "MANAGER"]}>
                 <Layout>
                   <StockIn />
                 </Layout>
@@ -85,7 +98,7 @@ function App() {
           <Route
             path="/transactions/stock-out"
             element={
-              <ProtectedRoute roles={['ADMIN', 'MANAGER']}>
+              <ProtectedRoute roles={["ADMIN", "MANAGER"]}>
                 <Layout>
                   <StockOut />
                 </Layout>
@@ -96,7 +109,7 @@ function App() {
           <Route
             path="/forecast"
             element={
-              <ProtectedRoute roles={['ADMIN', 'MANAGER']}>
+              <ProtectedRoute roles={["ADMIN", "MANAGER"]}>
                 <Layout>
                   <ForecastDashboard />
                 </Layout>
@@ -107,7 +120,7 @@ function App() {
           <Route
             path="/purchase-orders"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute roles={["ADMIN", "MANAGER"]}>
                 <Layout>
                   <PurchaseOrderList />
                 </Layout>
@@ -118,7 +131,7 @@ function App() {
           <Route
             path="/alerts"
             element={
-              <ProtectedRoute roles={['ADMIN', 'MANAGER']}>
+              <ProtectedRoute roles={["ADMIN", "MANAGER"]}>
                 <Layout>
                   <AlertList />
                 </Layout>
@@ -129,7 +142,7 @@ function App() {
           <Route
             path="/analytics"
             element={
-              <ProtectedRoute roles={['ADMIN', 'MANAGER']}>
+              <ProtectedRoute roles={["ADMIN", "MANAGER"]}>
                 <Layout>
                   <AnalyticsDashboard />
                 </Layout>
@@ -137,11 +150,38 @@ function App() {
             }
           />
 
-          {/* Redirect root to dashboard */}
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route
+              path="/vendor/dashboard"
+              element={
+                <ProtectedRoute roles={["VENDOR"]}>
+                  <Layout>
+                    <VendorDashboard />
+                  </Layout>
+                </ProtectedRoute>
+            }
+          />
 
-          {/* 404 - Not Found */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+
+            <Route
+              path="/vendor/orders"
+              element={
+                <ProtectedRoute roles={["VENDOR"]}>
+                  <Layout>
+                    <PurchaseOrderList />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+
+
+          {/* BUYER ROUTES
+          <Route path="/buyer/home" element={<BuyerLayout><BuyerHome /></BuyerLayout>} />
+          <Route path="/buyer/wishlist" element={<BuyerLayout><WishlistPage /></BuyerLayout>} />
+          <Route path="/buyer/purchases" element={<BuyerLayout><PurchaseHistory /></BuyerLayout>} /> */}
+
+          {/* 404 fallback */}
+          <Route path="*" element={<LandingPage />} />
+
         </Routes>
       </Router>
     </AuthProvider>
