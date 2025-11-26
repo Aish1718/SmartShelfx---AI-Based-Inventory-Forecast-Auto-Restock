@@ -30,5 +30,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT DISTINCT p.category FROM Product p")
     List<String> findAllCategories();
 
+    @Query("SELECT SUM(p.currentStock * p.price) FROM Product p")
+    Double calculateCurrentInventoryValue();
+
+
     Boolean existsBySku(String sku);
 }

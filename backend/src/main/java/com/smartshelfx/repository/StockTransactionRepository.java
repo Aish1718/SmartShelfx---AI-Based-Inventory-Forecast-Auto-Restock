@@ -42,4 +42,46 @@ public interface StockTransactionRepository extends JpaRepository<StockTransacti
 
     @Query("SELECT st FROM StockTransaction st WHERE st.product.category = :category ORDER BY st.timestamp DESC")
     List<StockTransaction> findByProductCategory(@Param("category") String category);
+
+    @Query("""
+    SELECT st.product.name, SUM(st.quantity)
+    FROM StockTransaction st
+    GROUP BY st.product.id
+    ORDER BY SUM(st.quantity) DESC
+    LIMIT :limit
+""")
+    List<Object[]> findTopProducts(@Param("limit") Integer limit);
+
+
+    @Query("""
+    SELECT st.product.name, SUM(st.quantity)
+    FROM StockTransaction st
+    GROUP BY st.product.id
+""")
+    List<Object[]> sumMovementForAllProducts();
+
+//     @Query("""
+//     SELECT p.name, COALESCE(SUM(st.quantity), 0)
+//     FROM Product p
+//     LEFT JOIN StockTransaction st ON st.product.id = p.id
+//     GROUP BY p.id
+// """)
+//     List<Object[]> sumMovementForAllProducts();
+
+
+    @Query("""
+    SELECT
+        MONTH(st.timestamp) AS monthNumber,
+        SUM(CASE WHEN st.type = 'IN' THEN st.quantity ELSE 0 END) AS stockIn,
+        SUM(CASE WHEN st.type = 'OUT' THEN st.quantity ELSE 0 END) AS stockOut
+    FROM StockTransaction st
+    WHERE YEAR(st.timestamp) = YEAR(CURRENT_DATE)
+    GROUP BY MONTH(st.timestamp)
+    ORDER BY MONTH(st.timestamp)
+""")
+List<Object[]> getMonthlyStockMovement();
+
+
+
+
 }

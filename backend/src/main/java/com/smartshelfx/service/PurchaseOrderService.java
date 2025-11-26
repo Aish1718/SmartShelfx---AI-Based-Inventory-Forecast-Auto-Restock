@@ -5,9 +5,11 @@ import com.smartshelfx.exception.BadRequestException;
 import com.smartshelfx.exception.ResourceNotFoundException;
 import com.smartshelfx.model.Product;
 import com.smartshelfx.model.PurchaseOrder;
+import com.smartshelfx.model.StockTransaction;
 import com.smartshelfx.model.User;
 import com.smartshelfx.model.enums.OrderStatus;
 import com.smartshelfx.model.enums.Role;
+import com.smartshelfx.model.enums.TransactionType;
 import com.smartshelfx.repository.ProductRepository;
 import com.smartshelfx.repository.PurchaseOrderRepository;
 import com.smartshelfx.repository.UserRepository;
@@ -16,6 +18,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.smartshelfx.repository.StockTransactionRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -32,6 +36,12 @@ public class PurchaseOrderService {
     private final UserRepository userRepository;
     private final EmailService emailService;
     private final AIForecastService forecastService;
+    private final StockTransactionService stockTransactionService;
+    private final StockTransactionRepository transactionRepository;
+    //private final StockTransactionRepository stockTransactionRepository;
+
+
+
 
     @Transactional
     public PurchaseOrderDTO createPurchaseOrder(PurchaseOrderRequest request) {
@@ -222,10 +232,17 @@ public PurchaseOrderDTO updateOrderStatus(Long id, OrderStatusUpdateDTO updateDT
             createStockInTransaction(po); // Auto stock-in on delivery
             break;
 
+        // case RECEIVED:
+        //     // Manager-only action (mark item as received)
+        //     po.setActualDelivery(LocalDate.now());
+        //     break;
+
         case RECEIVED:
-            // Manager-only action (mark item as received)
+            // Manager confirms that goods have arrived at warehouse
             po.setActualDelivery(LocalDate.now());
+            createStockInTransaction(po);   // <-- THIS is the important new line
             break;
+
 
         case CANCELLED:
             // No additional logic
@@ -338,13 +355,111 @@ public PurchaseOrderDTO updateOrderStatus(Long id, OrderStatusUpdateDTO updateDT
         return generatedOrders;
     }
 
+    // private void createStockInTransaction(PurchaseOrder po) {
+    //     // This would integrate with StockTransactionService
+    //     // For now, just update the product stock directly
+    //     Product product = po.getProduct();
+    //     product.setCurrentStock(product.getCurrentStock() + po.getQuantity());
+    //     productRepository.save(product);
+    // }
+
+
+    // private void createStockInTransaction(PurchaseOrder po) {
+
+    //     StockTransactionRequest request = new StockTransactionRequest();
+    //     request.setProductId(po.getProduct().getId());
+    //     request.setQuantity(po.getQuantity());
+    //     request.setType(TransactionType.IN);
+    //     request.setNotes("Stock received for Purchase Order #" + po.getId());
+    //     request.setReferenceNumber("PO-" + po.getId());
+
+    //     stockTransactionService.processTransaction(request);
+    // }
+
+
+//     private void createStockInTransaction(PurchaseOrder po) {
+
+//     // Create a new stock transaction entry
+//     StockTransaction transaction = new StockTransaction();
+//     transaction.setProduct(po.getProduct());
+//     transaction.setQuantity(po.getQuantity());
+//     transaction.setType(TransactionType.IN);
+//     transaction.setNotes("Auto stock update for Purchase Order #" + po.getId());
+//     transaction.setReferenceNumber("PO-" + po.getId());
+//     transaction.setTimestamp(LocalDateTime.now());
+
+//     // Set previous and new stock
+//     int previous = po.getProduct().getCurrentStock();
+//     int updated = previous + po.getQuantity();
+
+//     transaction.setPreviousStock(previous);
+//     transaction.setNewStock(updated);
+
+//     // The user handling depends on who performed the action
+//     try {
+//         UserPrincipal userPrincipal = (UserPrincipal)
+//             SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+//         User currentUser = userRepository.findById(userPrincipal.getId())
+//                 .orElse(null);
+
+//         transaction.setHandledBy(currentUser);
+//     } catch (Exception ignored) {}
+
+//     // Save the transaction
+//     transactionRepository.save(transaction);
+
+//     // Update the actual product stock
+//     Product product = po.getProduct();
+//     product.setCurrentStock(updated);
+//     productRepository.save(product);
+//  }
+
+
+
+
     private void createStockInTransaction(PurchaseOrder po) {
-        // This would integrate with StockTransactionService
-        // For now, just update the product stock directly
-        Product product = po.getProduct();
-        product.setCurrentStock(product.getCurrentStock() + po.getQuantity());
-        productRepository.save(product);
-    }
+
+        System.out.println("🔥 createStockInTransaction called for PO " + po.getId());
+
+    // Create a new stock transaction entry
+    StockTransaction transaction = new StockTransaction();
+    transaction.setProduct(po.getProduct());
+    transaction.setQuantity(po.getQuantity());
+    transaction.setType(TransactionType.IN);
+    transaction.setNotes("Auto stock update for Purchase Order #" + po.getId());
+    transaction.setReferenceNumber("PO-" + po.getId());
+    transaction.setTimestamp(LocalDateTime.now());
+
+    // Previous and new stock
+    int previous = po.getProduct().getCurrentStock();
+    int updated = previous + po.getQuantity();
+
+    transaction.setPreviousStock(previous);
+    transaction.setNewStock(updated);
+
+    // Set user who performed the action
+    try {
+        UserPrincipal userPrincipal = (UserPrincipal)
+                SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        User currentUser = userRepository.findById(userPrincipal.getId()).orElse(null);
+        transaction.setHandledBy(currentUser);
+    } catch (Exception ignored) {}
+
+    // CORRECT REPOSITORY NAME
+    transactionRepository.save(transaction);
+
+
+    // Update product stock
+    Product product = po.getProduct();
+    product.setCurrentStock(updated);
+    productRepository.save(product);
+
+    System.out.println("✅ Stock transaction saved!");
+}
+
+
 
     private String buildReasonMessage(Product product, RestockRecommendationDTO rec) {
         StringBuilder reason = new StringBuilder();

@@ -5,6 +5,9 @@ export const analyticsService = {
   getInventoryTrends: () => api.get('/analytics/inventory-trends'),
   getTopProducts: (limit = 10) => api.get(`/analytics/top-products?limit=${limit}`),
   getSalesComparison: (months = 6) => api.get(`/analytics/sales-comparison?months=${months}`),
+  getMonthlyStock: () => api.get('/analytics/monthly-stock'),
+  getInventoryTrend: () => api.get('/analytics/inventory-trend'),
+
   exportReport: (format = 'pdf') => api.get(`/analytics/export?format=${format}`, {
     responseType: 'blob'
   }),

@@ -19,7 +19,7 @@ public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder, Lo
     List<PurchaseOrder> findByProductId(Long productId);
 
     @Query("SELECT COUNT(po) FROM PurchaseOrder po WHERE po.status = :status")
-    Long countByStatus(@Param("status") String status);
+    Long countByStatus(@Param("status") OrderStatus status);
 
     @Query("SELECT po FROM PurchaseOrder po WHERE po.status IN (:statuses) ORDER BY po.orderDate DESC")
     List<PurchaseOrder> findByStatusIn(@Param("statuses") List<OrderStatus> statuses);
@@ -43,4 +43,9 @@ public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder, Lo
     @Query("SELECT po FROM PurchaseOrder po WHERE po.vendor.id = :vendorId AND po.status = :status")
     List<PurchaseOrder> findByVendorIdAndStatus(@Param("vendorId") Long vendorId,
                                                 @Param("status") OrderStatus status);
+
+
+    @Query("SELECT COUNT(po) FROM PurchaseOrder po WHERE po.status IN :statuses")
+    Long countByStatuses(@Param("statuses") List<OrderStatus> statuses);
+
 }

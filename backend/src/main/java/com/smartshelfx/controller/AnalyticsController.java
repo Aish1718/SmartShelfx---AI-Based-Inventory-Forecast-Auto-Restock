@@ -16,10 +16,10 @@ public class AnalyticsController {
     private final AnalyticsService analyticsService;
 
     @GetMapping("/inventory-trends")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<AnalyticsResponse> getInventoryTrends() {
-        return ResponseEntity.ok(analyticsService.getInventoryTrends());
-    }
+        @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+        public ResponseEntity<AnalyticsResponse> getInventoryTrends() {
+            return ResponseEntity.ok(analyticsService.getInventoryTrend());
+}
 
     @GetMapping("/top-products")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
@@ -41,4 +41,18 @@ public class AnalyticsController {
             @RequestParam(defaultValue = "pdf") String format) {
         return analyticsService.exportReport(format);
     }
+
+
+    @GetMapping("/monthly-stock")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    public ResponseEntity<AnalyticsResponse> getMonthlyStockMovement() {
+        return ResponseEntity.ok(analyticsService.getMonthlyStockMovement());
+    }
+
+    @GetMapping("/inventory-trend")
+        public ResponseEntity<AnalyticsResponse> getInventoryTrend() {
+            return ResponseEntity.ok(analyticsService.getInventoryTrend());
+    }
+
+
 }
