@@ -30,8 +30,12 @@ public class Product {
     @Column(name = "image_url")
     private String imageUrl;
 
-    private Integer reorderLevel;
+    @Column(name = "currentStock")
     private Integer currentStock;
+
+    @Column(name = "reorderLevel")
+    private Integer reorderLevel;
+
     private String category;
     private Double price;
 

@@ -1,3 +1,4 @@
+//PurchaseOrderService.java
 package com.smartshelfx.service;
 
 import com.smartshelfx.dto.*;
@@ -26,6 +27,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Map;
+
 
 @Service
 @RequiredArgsConstructor
@@ -277,60 +280,174 @@ public PurchaseOrderDTO updateOrderStatus(Long id, OrderStatusUpdateDTO updateDT
         poRepository.delete(po);
     }
 
-    public List<RestockRecommendationDTO> getRestockRecommendations() {
-        try {
-            // Get forecast data from AI service
-            var forecastResponse = forecastService.getProductsAtRisk();
+    // public List<RestockRecommendationDTO> getRestockRecommendations() {
+    //     try {
+    //         // Get forecast data from AI service
+    //         var forecastResponse = forecastService.getProductsAtRisk();
 
-            @SuppressWarnings("unchecked")
-            List<java.util.Map<String, Object>> products =
-                (List<java.util.Map<String, Object>>) forecastResponse.get("products");
+    //         @SuppressWarnings("unchecked")
+    //         List<java.util.Map<String, Object>> products =
+    //             (List<java.util.Map<String, Object>>) forecastResponse.get("products");
 
-            return products.stream().map(forecast -> {
-                Long productId = ((Number) forecast.get("product_id")).longValue();
+    //         return products.stream().map(forecast -> {
+    //             Long productId = ((Number) forecast.get("product_id")).longValue();
 
-                // Check if there's already an active order
-                Long activeOrders = poRepository.countActiveOrdersByProduct(productId);
+    //             // Check if there's already an active order
+    //             Long activeOrders = poRepository.countActiveOrdersByProduct(productId);
 
-                // Get vendor info
-                Product product = productRepository.findById(productId).orElse(null);
+    //             // Get vendor info
+    //             Product product = productRepository.findById(productId).orElse(null);
 
-                RestockRecommendationDTO recommendation = new RestockRecommendationDTO();
-                recommendation.setProductId(productId);
-                recommendation.setProductName((String) forecast.get("product_name"));
-                recommendation.setProductSku((String) forecast.get("product_sku"));
-                recommendation.setCurrentStock(((Number) forecast.get("current_stock")).intValue());
-                recommendation.setPredictedDemand7Days(((Number) forecast.get("predicted_demand_7days")).intValue());
-                recommendation.setRiskLevel((String) forecast.get("risk_level"));
-                recommendation.setConfidenceScore(((Number) forecast.get("confidence_score")).doubleValue());
-                recommendation.setHasActiveOrder(activeOrders > 0);
+    //             RestockRecommendationDTO recommendation = new RestockRecommendationDTO();
+    //             recommendation.setProductId(productId);
+    //             recommendation.setProductName((String) forecast.get("product_name"));
+    //             recommendation.setProductSku((String) forecast.get("product_sku"));
+    //             recommendation.setCurrentStock(((Number) forecast.get("current_stock")).intValue());
+    //             recommendation.setPredictedDemand7Days(((Number) forecast.get("predicted_demand_7days")).intValue());
+    //             recommendation.setRiskLevel((String) forecast.get("risk_level"));
+    //             recommendation.setConfidenceScore(((Number) forecast.get("confidence_score")).doubleValue());
+    //             recommendation.setHasActiveOrder(activeOrders > 0);
 
-                if (product != null) {
-                    recommendation.setReorderLevel(product.getReorderLevel());
+    //             if (product != null) {
+    //                 recommendation.setReorderLevel(product.getReorderLevel());
 
-                    // Calculate recommended quantity
-                    int recommended = Math.max(
-                        product.getReorderLevel() - product.getCurrentStock(),
-                        recommendation.getPredictedDemand7Days()
-                    );
-                    recommendation.setRecommendedQuantity(recommended);
+    //                 // Calculate recommended quantity
+    //                 int recommended = Math.max(
+    //                     product.getReorderLevel() - product.getCurrentStock(),
+    //                     recommendation.getPredictedDemand7Days()
+    //                 );
+    //                 recommendation.setRecommendedQuantity(recommended);
 
-                    if (product.getVendor() != null) {
-                        recommendation.setVendorId(product.getVendor().getId());
-                        recommendation.setVendorName(product.getVendor().getName());
-                        recommendation.setVendorEmail(product.getVendor().getEmail());
-                    }
+    //                 if (product.getVendor() != null) {
+    //                     recommendation.setVendorId(product.getVendor().getId());
+    //                     recommendation.setVendorName(product.getVendor().getName());
+    //                     recommendation.setVendorEmail(product.getVendor().getEmail());
+    //                 }
 
-                    recommendation.setReason(buildReasonMessage(product, recommendation));
+    //                 recommendation.setReason(buildReasonMessage(product, recommendation));
+    //             }
+
+    //             return recommendation;
+    //         }).collect(Collectors.toList());
+
+    //     } catch (Exception e) {
+    //         throw new BadRequestException("Failed to get restock recommendations: " + e.getMessage());
+    //     }
+    // }
+
+
+//     public List<RestockRecommendationDTO> getRestockRecommendations() {
+//     try {
+//         // AI returns a LIST directly
+//         @SuppressWarnings("unchecked")
+//         List<Map<String, Object>> products = forecastService.getProductsAtRisk();
+
+//         return products.stream().map(forecast -> {
+//             Long productId = ((Number) forecast.get("product_id")).longValue();
+
+//             // Check if there's already an active order
+//             Long activeOrders = poRepository.countActiveOrdersByProduct(productId);
+
+//             // Get vendor info
+//             Product product = productRepository.findById(productId).orElse(null);
+
+//             RestockRecommendationDTO recommendation = new RestockRecommendationDTO();
+//             recommendation.setProductId(productId);
+//             recommendation.setProductName((String) forecast.get("product_name"));
+//             recommendation.setProductSku((String) forecast.get("product_sku"));
+//             recommendation.setCurrentStock(((Number) forecast.get("currentStock")).intValue());
+//             recommendation.setPredictedDemand7Days(((Number) forecast.get("predicted_demand_7days")).intValue());
+//             recommendation.setRiskLevel((String) forecast.get("risk_level"));
+//             recommendation.setConfidenceScore(((Number) forecast.get("confidence_score")).doubleValue());
+//             recommendation.setHasActiveOrder(activeOrders > 0);
+
+//             if (product != null) {
+//                 recommendation.setReorderLevel(product.getReorderLevel());
+
+//                 int recommended = Math.max(
+//                     product.getReorderLevel() - product.getCurrentStock(),
+//                     recommendation.getPredictedDemand7Days()
+//                 );
+//                 recommendation.setRecommendedQuantity(recommended);
+
+//                 if (product.getVendor() != null) {
+//                     recommendation.setVendorId(product.getVendor().getId());
+//                     recommendation.setVendorName(product.getVendor().getName());
+//                     recommendation.setVendorEmail(product.getVendor().getEmail());
+//                 }
+
+//                 recommendation.setReason(buildReasonMessage(product, recommendation));
+//             }
+
+//             return recommendation;
+
+//         }).collect(Collectors.toList());
+
+//     } catch (Exception e) {
+//         throw new BadRequestException("Failed to get restock recommendations: " + e.getMessage());
+//     }
+// }
+
+
+    // Update this method in PurchaseOrderService.java
+
+public List<RestockRecommendationDTO> getRestockRecommendations() {
+    try {
+        // AI service returns a List directly (not wrapped in a map)
+        List<Map<String, Object>> products = forecastService.getProductsAtRisk();
+
+        return products.stream().map(forecast -> {
+            Long productId = ((Number) forecast.get("product_id")).longValue();
+
+            // Check if there's already an active order
+            Long activeOrders = poRepository.countActiveOrdersByProduct(productId);
+
+            // Get vendor info
+            Product product = productRepository.findById(productId).orElse(null);
+
+            RestockRecommendationDTO recommendation = new RestockRecommendationDTO();
+            recommendation.setProductId(productId);
+            recommendation.setProductName((String) forecast.get("product_name"));
+            recommendation.setProductSku((String) forecast.get("product_sku"));
+
+            // Fix: Use "currentStock" (camelCase) instead of "current_stock"
+            recommendation.setCurrentStock(((Number) forecast.get("currentStock")).intValue());
+            recommendation.setPredictedDemand7Days(((Number) forecast.get("predicted_demand_7days")).intValue());
+            recommendation.setRiskLevel((String) forecast.get("risk_level"));
+            recommendation.setConfidenceScore(((Number) forecast.get("confidence_score")).doubleValue());
+            recommendation.setHasActiveOrder(activeOrders > 0);
+
+            if (product != null) {
+                recommendation.setReorderLevel(product.getReorderLevel());
+
+                // Calculate recommended quantity
+                int recommended = Math.max(
+                    product.getReorderLevel() - product.getCurrentStock(),
+                    recommendation.getPredictedDemand7Days()
+                );
+                recommendation.setRecommendedQuantity(recommended);
+
+                if (product.getVendor() != null) {
+                    recommendation.setVendorId(product.getVendor().getId());
+                    recommendation.setVendorName(product.getVendor().getName());
+                    recommendation.setVendorEmail(product.getVendor().getEmail());
                 }
 
-                return recommendation;
-            }).collect(Collectors.toList());
+                recommendation.setReason(buildReasonMessage(product, recommendation));
+            }
 
-        } catch (Exception e) {
-            throw new BadRequestException("Failed to get restock recommendations: " + e.getMessage());
-        }
+            return recommendation;
+
+        }).collect(Collectors.toList());
+
+    } catch (Exception e) {
+        throw new BadRequestException("Failed to get restock recommendations: " + e.getMessage());
     }
+}
+
+
+
+
 
     @Transactional
     public List<PurchaseOrderDTO> generateAutoRestockOrders() {

@@ -23,7 +23,7 @@ export const purchaseOrderService = {
   deletePurchaseOrder: (id) => api.delete(`/purchase-orders/${id}`),
 
   // Get restock recommendations
-  getRestockRecommendations: () => api.get('/purchase-orders/recommendations'),
+  getRestockRecommendations: (payload) => api.get('/purchase-orders/recommendations', payload),
 
   // Generate auto-restock orders
   generateAutoRestockOrders: () => api.post('/purchase-orders/auto-restock'),

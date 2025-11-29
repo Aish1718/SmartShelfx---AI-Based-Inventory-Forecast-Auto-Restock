@@ -1,112 +1,237 @@
+# # ai-service/app/utils/helpers.py
+# import pandas as pd
+# import numpy as np
+# from datetime import datetime, timedelta
+
+# def prepare_time_series_data(df, target_column='quantity_out'):
+#     """
+#     Prepare time series data with proper date range and missing values
+#     """
+#     if df is None or df.empty:
+#         return None
+
+#     # Ensure transaction_date is datetime
+#     df['transaction_date'] = pd.to_datetime(df['transaction_date'])
+
+#     # Create complete date range
+#     date_range = pd.date_range(
+#         start=df['transaction_date'].min(),
+#         end=df['transaction_date'].max(),
+#         freq='D'
+#     )
+
+#     # Reindex with complete date range, fill missing values with 0
+#     df = df.set_index('transaction_date')
+#     df = df.reindex(date_range, fill_value=0)
+#     df.index.name = 'transaction_date'
+#     df = df.reset_index()
+
+#     return df
+
+# def create_features(df, target_column='quantity_out'):
+#     """
+#     Create time series features for forecasting
+#     """
+#     if df is None or df.empty:
+#         return None
+
+#     # Make a copy
+#     df = df.copy()
+
+#     # Time-based features
+#     df['day_of_week'] = df['transaction_date'].dt.dayofweek
+#     df['day_of_month'] = df['transaction_date'].dt.day
+#     df['month'] = df['transaction_date'].dt.month
+#     df['week_of_year'] = df['transaction_date'].dt.isocalendar().week
+
+#     # Rolling statistics (moving averages)
+#     df['rolling_mean_7'] = df[target_column].rolling(window=7, min_periods=1).mean()
+#     df['rolling_mean_14'] = df[target_column].rolling(window=14, min_periods=1).mean()
+#     df['rolling_mean_30'] = df[target_column].rolling(window=30, min_periods=1).mean()
+
+#     # Rolling standard deviation
+#     df['rolling_std_7'] = df[target_column].rolling(window=7, min_periods=1).std()
+#     df['rolling_std_14'] = df[target_column].rolling(window=14, min_periods=1).std()
+
+#     # Lag features (previous days)
+#     df['lag_1'] = df[target_column].shift(1)
+#     df['lag_7'] = df[target_column].shift(7)
+#     df['lag_14'] = df[target_column].shift(14)
+#     df['lag_30'] = df[target_column].shift(30)
+
+#     # Fill NaN values
+#     df = df.fillna(0)
+
+#     return df
+
+# def calculate_confidence_score(predictions, historical_data):
+#     """
+#     Calculate confidence score for predictions based on historical variance
+#     """
+#     if len(historical_data) < 7:
+#         return 0.5
+
+#     # Calculate coefficient of variation
+#     mean = historical_data.mean()
+#     std = historical_data.std()
+
+#     if mean == 0:
+#         return 0.5
+
+#     cv = std / mean
+
+#     # Convert to confidence score (0-1)
+#     # Lower CV = higher confidence
+#     confidence = max(0.3, min(1.0, 1.0 - (cv / 2)))
+
+#     return round(confidence, 2)
+
+# def detect_stockout_risk(current_stock, reorder_level, predicted_demand_7days):
+#     """
+#     Detect if product is at risk of stockout
+#     """
+#     days_until_stockout = None
+#     risk_level = 'LOW'
+
+#     if predicted_demand_7days > 0:
+#         days_until_stockout = int(current_stock / (predicted_demand_7days / 7))
+
+#         if days_until_stockout <= 3:
+#             risk_level = 'CRITICAL'
+#         elif days_until_stockout <= 7:
+#             risk_level = 'HIGH'
+#         elif days_until_stockout <= 14:
+#             risk_level = 'MEDIUM'
+
+#     at_risk = current_stock < reorder_level or days_until_stockout and days_until_stockout <= 14
+
+#     return {
+#         'at_risk': at_risk,
+#         'risk_level': risk_level,
+#         'days_until_stockout': days_until_stockout,
+#         'recommended_order_quantity': max(0, reorder_level - current_stock + int(predicted_demand_7days))
+#     }
+
+
+
+
+
+# # ai-service/app/utils/helpers.py
+
 import pandas as pd
 import numpy as np
-from datetime import datetime, timedelta
 
-def prepare_time_series_data(df, target_column='quantity_out'):
+
+# -----------------------------------------------
+# 1. PREPARE TIME SERIES DATA
+# -----------------------------------------------
+def prepare_time_series_data(df):
     """
-    Prepare time series data with proper date range and missing values
+    Converts raw stock transaction data into a clean daily time series.
+    Expects df = columns: transaction_date, quantity_in, quantity_out
     """
-    if df is None or df.empty:
-        return None
 
-    # Ensure transaction_date is datetime
-    df['transaction_date'] = pd.to_datetime(df['transaction_date'])
-
-    # Create complete date range
-    date_range = pd.date_range(
-        start=df['transaction_date'].min(),
-        end=df['transaction_date'].max(),
-        freq='D'
-    )
-
-    # Reindex with complete date range, fill missing values with 0
-    df = df.set_index('transaction_date')
-    df = df.reindex(date_range, fill_value=0)
-    df.index.name = 'transaction_date'
-    df = df.reset_index()
-
-    return df
-
-def create_features(df, target_column='quantity_out'):
-    """
-    Create time series features for forecasting
-    """
-    if df is None or df.empty:
-        return None
-
-    # Make a copy
     df = df.copy()
 
-    # Time-based features
-    df['day_of_week'] = df['transaction_date'].dt.dayofweek
-    df['day_of_month'] = df['transaction_date'].dt.day
-    df['month'] = df['transaction_date'].dt.month
-    df['week_of_year'] = df['transaction_date'].dt.isocalendar().week
+    # Ensure date format
+    df["transaction_date"] = pd.to_datetime(df["transaction_date"])
 
-    # Rolling statistics (moving averages)
-    df['rolling_mean_7'] = df[target_column].rolling(window=7, min_periods=1).mean()
-    df['rolling_mean_14'] = df[target_column].rolling(window=14, min_periods=1).mean()
-    df['rolling_mean_30'] = df[target_column].rolling(window=30, min_periods=1).mean()
+    # Sort by date
+    df = df.sort_values("transaction_date")
 
-    # Rolling standard deviation
-    df['rolling_std_7'] = df[target_column].rolling(window=7, min_periods=1).std()
-    df['rolling_std_14'] = df[target_column].rolling(window=14, min_periods=1).std()
+    # Fill missing values
+    df["quantity_in"] = df["quantity_in"].fillna(0)
+    df["quantity_out"] = df["quantity_out"].fillna(0)
 
-    # Lag features (previous days)
-    df['lag_1'] = df[target_column].shift(1)
-    df['lag_7'] = df[target_column].shift(7)
-    df['lag_14'] = df[target_column].shift(14)
-    df['lag_30'] = df[target_column].shift(30)
-
-    # Fill NaN values
-    df = df.fillna(0)
+    # Ensure numeric
+    df["quantity_in"] = df["quantity_in"].astype(int)
+    df["quantity_out"] = df["quantity_out"].astype(int)
 
     return df
 
-def calculate_confidence_score(predictions, historical_data):
+
+# -----------------------------------------------
+# 2. FEATURE GENERATION (lags + moving averages)
+# -----------------------------------------------
+def create_features(df):
     """
-    Calculate confidence score for predictions based on historical variance
+    Generates ML model features:
+    - date parts
+    - rolling averages
+    - lagged demand
     """
-    if len(historical_data) < 7:
+
+    df = df.copy()
+
+    # Date derived features
+    df["day_of_week"] = df["transaction_date"].dt.dayofweek
+    df["day_of_month"] = df["transaction_date"].dt.day
+    df["month"] = df["transaction_date"].dt.month
+
+    # Rolling features
+    df["rolling_mean_7"] = df["quantity_out"].rolling(window=7, min_periods=1).mean()
+    df["rolling_mean_14"] = df["quantity_out"].rolling(window=14, min_periods=1).mean()
+    df["rolling_std_7"] = df["quantity_out"].rolling(window=7, min_periods=1).std().fillna(0)
+
+    # Lag features
+    df["lag_1"] = df["quantity_out"].shift(1).fillna(0)
+    df["lag_7"] = df["quantity_out"].shift(7).fillna(0)
+    df["lag_14"] = df["quantity_out"].shift(14).fillna(0)
+
+    return df
+
+
+# -----------------------------------------------
+# 3. CONFIDENCE SCORE: How stable is demand?
+# -----------------------------------------------
+def calculate_confidence_score(predictions, recent_demand):
+    """
+    Returns 0.0 to 1.0 score
+    Higher means more reliable forecast.
+    Uses variance & demand stability.
+    """
+
+    try:
+        if len(recent_demand) == 0:
+            return 0.5
+
+        variability = np.std(recent_demand)
+        avg = np.mean(recent_demand)
+
+        if avg == 0:
+            return 0.4
+
+        score = 1 - (variability / (avg + 1))
+
+        return float(max(0.1, min(score, 1.0)))
+
+    except:
         return 0.5
 
-    # Calculate coefficient of variation
-    mean = historical_data.mean()
-    std = historical_data.std()
 
-    if mean == 0:
-        return 0.5
-
-    cv = std / mean
-
-    # Convert to confidence score (0-1)
-    # Lower CV = higher confidence
-    confidence = max(0.3, min(1.0, 1.0 - (cv / 2)))
-
-    return round(confidence, 2)
-
-def detect_stockout_risk(current_stock, reorder_level, predicted_demand_7days):
+# -----------------------------------------------
+# 4. STOCKOUT RISK DETECTION
+# -----------------------------------------------
+def detect_stockout_risk(currentStock, reorderLevel, predicted_demand_7days):
     """
-    Detect if product is at risk of stockout
+    Determines risk level and whether stockout is likely.
     """
-    days_until_stockout = None
-    risk_level = 'LOW'
 
-    if predicted_demand_7days > 0:
-        days_until_stockout = int(current_stock / (predicted_demand_7days / 7))
+    currentStock = int(currentStock or 0)
+    reorderLevel = int(reorderLevel or 0)
+    predicted_7 = int(predicted_demand_7days or 0)
 
-        if days_until_stockout <= 3:
-            risk_level = 'CRITICAL'
-        elif days_until_stockout <= 7:
-            risk_level = 'HIGH'
-        elif days_until_stockout <= 14:
-            risk_level = 'MEDIUM'
+    # Simple logic
+    if currentStock <= 0:
+        return {"risk_level": "CRITICAL", "at_risk": True}
 
-    at_risk = current_stock < reorder_level or days_until_stockout and days_until_stockout <= 14
+    if currentStock < predicted_7:
+        return {"risk_level": "CRITICAL", "at_risk": True}
 
-    return {
-        'at_risk': at_risk,
-        'risk_level': risk_level,
-        'days_until_stockout': days_until_stockout,
-        'recommended_order_quantity': max(0, reorder_level - current_stock + int(predicted_demand_7days))
-    }
+    if currentStock < reorderLevel:
+        return {"risk_level": "HIGH", "at_risk": True}
+
+    if currentStock < reorderLevel * 1.5:
+        return {"risk_level": "MEDIUM", "at_risk": False}
+
+    return {"risk_level": "LOW", "at_risk": False}
