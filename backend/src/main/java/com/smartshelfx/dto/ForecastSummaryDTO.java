@@ -1,3 +1,5 @@
+// backend/src/main/java/com/smartshelfx/dto/ForecastSummaryDTO.java
+
 package com.smartshelfx.dto;
 
 import lombok.Data;

@@ -1,3 +1,5 @@
+// frontend/src/components/forecast/ForecastTable.jsx
+
 import React from "react";
 
 const ForecastTable = ({ forecastData, onSelect }) => {

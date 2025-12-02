@@ -1,3 +1,5 @@
+// frontend/src/services/forecastService.js
+
 import api from './api';
 
 export const forecastService = {

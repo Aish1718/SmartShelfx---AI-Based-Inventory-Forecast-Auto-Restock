@@ -1,3 +1,5 @@
+// frontend/src/components/forecast/ProductForecastModel.jsx
+
 import React, { useState, useEffect } from 'react';
 import { X, TrendingUp, AlertCircle, Calendar } from 'lucide-react';
 import { forecastService } from '../../services/forecastService';

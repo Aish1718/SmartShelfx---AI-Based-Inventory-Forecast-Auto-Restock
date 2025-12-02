@@ -234,15 +234,107 @@
 
 # ai-service/app/routes/forecast_routes.py
 
+# from flask import Blueprint, request, jsonify
+# from app.services.forecast_service import ForecastService
+# from functools import wraps
+
+# # Create blueprint WITHOUT url_prefix here
+# forecast_bp = Blueprint("forecast_bp", __name__)
+# forecast_service = ForecastService()
+
+# # Simple error handler wrapper
+# def safe_route(f):
+#     @wraps(f)
+#     def wrapper(*args, **kwargs):
+#         try:
+#             return f(*args, **kwargs)
+#         except Exception as e:
+#             print("Error in forecast route:", str(e))
+#             return jsonify({"error": str(e)}), 500
+#     return wrapper
+
+
+# # -----------------------------
+# # 1. CHECK SERVICE HEALTH
+# # -----------------------------
+# @forecast_bp.route("/health", methods=["GET"])
+# def health_check():
+#     return jsonify({"status": "AI service running"}), 200
+
+
+# # ------------------------------------------
+# # 2. GET FORECAST FOR A SINGLE PRODUCT (GET)
+# # ------------------------------------------
+# @forecast_bp.route("/forecast/<int:product_id>", methods=["GET"])
+# @safe_route
+# def forecast_single(product_id):
+#     result = forecast_service.generate_forecast(product_id)
+#     return jsonify(result), 200
+
+
+# # ------------------------------------------
+# # 3. BULK FORECAST (POST)
+# # ------------------------------------------
+# @forecast_bp.route("/forecast/bulk", methods=["POST"])
+# @safe_route
+# def forecast_bulk():
+#     data = request.get_json(silent=True)
+#     product_ids = data.get("product_ids") if data else None
+
+#     results = forecast_service.generate_bulk_forecast(product_ids)
+#     return jsonify(results), 200
+
+
+# # --------------------------------------------------
+# # 4. AT-RISK PRODUCTS (GET) - THIS IS THE KEY ONE
+# # --------------------------------------------------
+# @forecast_bp.route("/forecast/at-risk", methods=["GET"])
+# @safe_route
+# def forecast_at_risk():
+#     """
+#     Returns list of products at risk of stockout.
+#     Called by Java backend for restock recommendations.
+#     """
+#     results = forecast_service.get_products_at_risk()
+
+#     # Ensure it returns a list, not an error dict
+#     if isinstance(results, dict) and "error" in results:
+#         return jsonify(results), 500
+
+#     return jsonify(results), 200
+
+
+# # --------------------------------------------------
+# # 5. RECOMMENDATIONS ENDPOINT (Alternative route)
+# # --------------------------------------------------
+# @forecast_bp.route("/purchase-orders/recommendations", methods=["GET"])
+# @safe_route
+# def purchase_order_recommendations():
+#     """
+#     Alternative endpoint for recommendations.
+#     """
+#     recs = forecast_service.get_products_at_risk()
+
+#     if isinstance(recs, dict) and "error" in recs:
+#         return jsonify({"status": "error", "message": recs["error"]}), 500
+
+#     return jsonify({
+#         "status": "success",
+#         "recommendations": recs
+#     }), 200
+
+
+
+
+# ai-service/app/routes/forecast_routes.py
+
 from flask import Blueprint, request, jsonify
 from app.services.forecast_service import ForecastService
 from functools import wraps
 
-# Create blueprint WITHOUT url_prefix here
 forecast_bp = Blueprint("forecast_bp", __name__)
 forecast_service = ForecastService()
 
-# Simple error handler wrapper
 def safe_route(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
@@ -264,11 +356,17 @@ def health_check():
 
 # ------------------------------------------
 # 2. GET FORECAST FOR A SINGLE PRODUCT (GET)
+#    ⭐ Now supports ?days=X query parameter
 # ------------------------------------------
 @forecast_bp.route("/forecast/<int:product_id>", methods=["GET"])
 @safe_route
 def forecast_single(product_id):
-    result = forecast_service.generate_forecast(product_id)
+    # Get days parameter from query string (default: 30)
+    days = request.args.get('days', default=30, type=int)
+
+    print(f"🔍 Generating forecast for product {product_id} ({days} days)")
+
+    result = forecast_service.generate_forecast(product_id, forecast_days=days)
     return jsonify(result), 200
 
 
@@ -286,7 +384,7 @@ def forecast_bulk():
 
 
 # --------------------------------------------------
-# 4. AT-RISK PRODUCTS (GET) - THIS IS THE KEY ONE
+# 4. AT-RISK PRODUCTS (GET)
 # --------------------------------------------------
 @forecast_bp.route("/forecast/at-risk", methods=["GET"])
 @safe_route
@@ -297,7 +395,6 @@ def forecast_at_risk():
     """
     results = forecast_service.get_products_at_risk()
 
-    # Ensure it returns a list, not an error dict
     if isinstance(results, dict) and "error" in results:
         return jsonify(results), 500
 
@@ -305,7 +402,51 @@ def forecast_at_risk():
 
 
 # --------------------------------------------------
-# 5. RECOMMENDATIONS ENDPOINT (Alternative route)
+# 5. FORECAST SUMMARY (GET)
+# --------------------------------------------------
+@forecast_bp.route("/forecast/summary", methods=["GET"])
+@safe_route
+def forecast_summary():
+    """
+    Returns aggregated forecast summary for dashboard.
+    """
+    forecasts = forecast_service.generate_bulk_forecast()
+
+    if isinstance(forecasts, dict) and "error" in forecasts:
+        return jsonify(forecasts), 500
+
+    # Calculate summary statistics
+    total_products = len(forecasts)
+    at_risk = [f for f in forecasts if f.get("at_risk", False)]
+
+    critical = sum(1 for f in forecasts if f.get("risk_level") == "CRITICAL")
+    high = sum(1 for f in forecasts if f.get("risk_level") == "HIGH")
+    medium = sum(1 for f in forecasts if f.get("risk_level") == "MEDIUM")
+    low = sum(1 for f in forecasts if f.get("risk_level") == "LOW")
+
+    # Average confidence
+    confidences = [f.get("confidence_score", 0) for f in forecasts]
+    avg_confidence = sum(confidences) / len(confidences) if confidences else 0
+
+    # Total 7-day demand
+    total_demand = sum(f.get("predicted_demand_7days", 0) for f in forecasts)
+
+    summary = {
+        "totalProducts": total_products,
+        "productsAtRisk": len(at_risk),
+        "criticalRisk": critical,
+        "highRisk": high,
+        "mediumRisk": medium,
+        "lowRisk": low,
+        "avgConfidence": round(avg_confidence, 2),
+        "totalPredictedDemand7Days": total_demand
+    }
+
+    return jsonify(summary), 200
+
+
+# --------------------------------------------------
+# 6. RECOMMENDATIONS ENDPOINT (Alternative route)
 # --------------------------------------------------
 @forecast_bp.route("/purchase-orders/recommendations", methods=["GET"])
 @safe_route

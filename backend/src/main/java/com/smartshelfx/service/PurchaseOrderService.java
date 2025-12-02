@@ -393,8 +393,10 @@ public PurchaseOrderDTO updateOrderStatus(Long id, OrderStatusUpdateDTO updateDT
 
 public List<RestockRecommendationDTO> getRestockRecommendations() {
     try {
-        // AI service returns a List directly (not wrapped in a map)
-        List<Map<String, Object>> products = forecastService.getProductsAtRisk();
+        // AI service returns a map with "products" key
+        Map<String, Object> forecastResponse = forecastService.getProductsAtRisk();
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> products = (List<Map<String, Object>>) forecastResponse.get("products");
 
         return products.stream().map(forecast -> {
             Long productId = ((Number) forecast.get("product_id")).longValue();

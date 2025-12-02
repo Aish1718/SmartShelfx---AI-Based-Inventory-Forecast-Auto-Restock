@@ -1,3 +1,5 @@
+// frontend/src/components/forecast/ForecastChart.jsx
+
 import React from 'react';
 import {
   Chart as ChartJS,
