@@ -324,38 +324,79 @@ const ForecastDashboard = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
 
+  // frontend/src/components/forecast/ForecastDashboard.jsx
+// Add this to prevent multiple simultaneous requests
+
+const [isFetching, setIsFetching] = useState(false);
+
+const fetchData = async () => {
+  if (isFetching) {
+    console.log('⏳ Already fetching, skipping...');
+    return;
+  }
+
+  setIsFetching(true);
+  setLoading(true);
+  setError('');
+
+  try {
+    console.log('📊 Fetching forecast data...');
+
+    // Fetch sequentially instead of parallel to reduce load
+    const summaryRes = await forecastService.getForecastSummary();
+    console.log('✅ Summary:', summaryRes.data);
+    setSummary(summaryRes.data);
+
+    // Wait a bit before next request
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    const atRiskRes = await forecastService.getProductsAtRisk();
+    console.log('✅ At Risk:', atRiskRes.data);
+
+    const products = atRiskRes.data.products || atRiskRes.data || [];
+    setAtRiskProducts(products);
+
+  } catch (err) {
+    console.error('❌ Failed to load forecast data:', err);
+    setError(err.response?.data?.error || 'Failed to load forecast data');
+  } finally {
+    setLoading(false);
+    setIsFetching(false);
+  }
+};
+
   useEffect(() => {
     fetchData();
   }, []);
 
-  const fetchData = async () => {
-    setLoading(true);
-    setError('');
+  // const fetchData = async () => {
+  //   setLoading(true);
+  //   setError('');
 
-    try {
-      console.log('📊 Fetching forecast data...');
+  //   try {
+  //     console.log('📊 Fetching forecast data...');
 
-      const [summaryRes, atRiskRes] = await Promise.all([
-        forecastService.getForecastSummary(),
-        forecastService.getProductsAtRisk()
-      ]);
+  //     const [summaryRes, atRiskRes] = await Promise.all([
+  //       forecastService.getForecastSummary(),
+  //       forecastService.getProductsAtRisk()
+  //     ]);
 
-      console.log('✅ Summary:', summaryRes.data);
-      console.log('✅ At Risk:', atRiskRes.data);
+  //     console.log('✅ Summary:', summaryRes.data);
+  //     console.log('✅ At Risk:', atRiskRes.data);
 
-      setSummary(summaryRes.data);
+  //     setSummary(summaryRes.data);
 
-      // Handle both response formats
-      const products = atRiskRes.data.products || atRiskRes.data || [];
-      setAtRiskProducts(products);
+  //     // Handle both response formats
+  //     const products = atRiskRes.data.products || atRiskRes.data || [];
+  //     setAtRiskProducts(products);
 
-    } catch (err) {
-      console.error('❌ Failed to load forecast data:', err);
-      setError(err.response?.data?.error || 'Failed to load forecast data');
-    } finally {
-      setLoading(false);
-    }
-  };
+  //   } catch (err) {
+  //     console.error('❌ Failed to load forecast data:', err);
+  //     setError(err.response?.data?.error || 'Failed to load forecast data');
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const handleRefresh = async () => {
     setRefreshing(true);

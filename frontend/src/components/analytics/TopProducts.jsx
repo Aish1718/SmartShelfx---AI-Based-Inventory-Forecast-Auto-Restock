@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+// frontend/src/components/analytics/TopProducts.jsx
 
 const TopProducts = () => {
   const [products, setProducts] = useState([]);

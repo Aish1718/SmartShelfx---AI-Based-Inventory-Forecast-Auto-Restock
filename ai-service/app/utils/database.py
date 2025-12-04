@@ -689,11 +689,144 @@
 
 
 
+# # ai-service/app/utils/database.py
+
+# import mysql.connector
+# from mysql.connector import Error
+# import pandas as pd
+# from app.config import Config
+# from datetime import datetime, timedelta
+
+# class DatabaseConnection:
+#     def __init__(self):
+#         self.config = Config.DB_CONFIG
+#         self.conn = None
+
+#     def connect(self):
+#         try:
+#             self.conn = mysql.connector.connect(**self.config)
+#             if self.conn.is_connected():
+#                 return self.conn
+#             return None
+#         except Error as e:
+#             print("❌ DB connect error:", e)
+#             return None
+
+#     def disconnect(self):
+#         try:
+#             if self.conn and self.conn.is_connected():
+#                 self.conn.close()
+#         except:
+#             pass
+
+#     def get_all_products(self):
+#         """Get all products from database"""
+#         conn = self.connect()
+#         if not conn:
+#             print("❌ Failed to connect to database")
+#             return None
+
+#         query = """
+#             SELECT id, name, sku, currentStock, reorderLevel, category, price, vendor_id
+#             FROM products
+#             WHERE 1=1
+#             ORDER BY name
+#         """
+#         try:
+#             df = pd.read_sql(query, conn)
+#             print(f"✅ Found {len(df)} products in database")
+#             return df
+#         except Exception as e:
+#             print("❌ Error fetching products:", e)
+#             import traceback
+#             traceback.print_exc()
+#             return None
+#         finally:
+#             self.disconnect()
+
+#     def get_product_info(self, product_id):
+#         """Get single product information"""
+#         conn = self.connect()
+#         if not conn:
+#             return None
+#         try:
+#             cursor = conn.cursor(dictionary=True)
+#             query = """
+#                 SELECT id, name, sku, currentStock, reorderLevel, category, price, vendor_id
+#                 FROM products
+#                 WHERE id = %s
+#             """
+#             cursor.execute(query, (product_id,))
+#             row = cursor.fetchone()
+#             cursor.close()
+
+#             if row:
+#                 print(f"✅ Product {product_id}: {row['name']} (Stock: {row['currentStock']}, Reorder: {row['reorderLevel']})")
+#             else:
+#                 print(f"⚠️  Product {product_id} not found")
+
+#             return row
+#         except Exception as e:
+#             print(f"❌ Error fetching product {product_id}:", e)
+#             return None
+#         finally:
+#             self.disconnect()
+
+#     def get_historical_data(self, product_id, days=90):
+#         """
+#         Returns a pandas DataFrame with columns: transaction_date, quantity_in, quantity_out
+#         Aggregated by day
+#         """
+#         conn = self.connect()
+#         if not conn:
+#             print("❌ Failed to connect for historical data")
+#             return None
+
+#         query = """
+#             SELECT
+#                 DATE(st.timestamp) as transaction_date,
+#                 SUM(CASE WHEN st.type='IN' THEN st.quantity ELSE 0 END) as quantity_in,
+#                 SUM(CASE WHEN st.type='OUT' THEN st.quantity ELSE 0 END) as quantity_out
+#             FROM stock_transactions st
+#             WHERE st.product_id = %s
+#               AND st.timestamp >= DATE_SUB(NOW(), INTERVAL %s DAY)
+#             GROUP BY DATE(st.timestamp)
+#             ORDER BY transaction_date ASC
+#         """
+#         try:
+#             df = pd.read_sql(query, conn, params=(product_id, days))
+
+#             if len(df) > 0:
+#                 print(f"✅ Product {product_id}: Found {len(df)} days of transaction data")
+#                 print(f"   Total OUT: {df['quantity_out'].sum()}, Total IN: {df['quantity_in'].sum()}")
+#             else:
+#                 print(f"⚠️  Product {product_id}: No transaction history found")
+
+#             return df
+#         except Exception as e:
+#             print(f"❌ Error fetching historical data for product {product_id}:", e)
+#             import traceback
+#             traceback.print_exc()
+#             return None
+#         finally:
+#             self.disconnect()
+
+#     def save_forecast(self, product_id, forecast_df):
+#         """Save forecast results (optional - for future use)"""
+#         # Implementation here if you want to save forecasts to a table
+#         pass
+
+
+
+
+
+
 # ai-service/app/utils/database.py
 
 import mysql.connector
 from mysql.connector import Error
 import pandas as pd
+from sqlalchemy import create_engine
 from app.config import Config
 from datetime import datetime, timedelta
 
@@ -702,6 +835,13 @@ class DatabaseConnection:
         self.config = Config.DB_CONFIG
         self.conn = None
 
+        # Create SQLAlchemy engine for pandas (fixes the warning)
+        db_url = (
+            f"mysql+mysqlconnector://{self.config['user']}:{self.config['password']}"
+            f"@{self.config['host']}:{self.config['port']}/{self.config['database']}"
+        )
+        self.engine = create_engine(db_url)
+
     def connect(self):
         try:
             self.conn = mysql.connector.connect(**self.config)
@@ -709,7 +849,7 @@ class DatabaseConnection:
                 return self.conn
             return None
         except Error as e:
-            print("❌ DB connect error:", e)
+            print(f"❌ DB connect error: {e}")
             return None
 
     def disconnect(self):
@@ -721,11 +861,6 @@ class DatabaseConnection:
 
     def get_all_products(self):
         """Get all products from database"""
-        conn = self.connect()
-        if not conn:
-            print("❌ Failed to connect to database")
-            return None
-
         query = """
             SELECT id, name, sku, currentStock, reorderLevel, category, price, vendor_id
             FROM products
@@ -733,16 +868,15 @@ class DatabaseConnection:
             ORDER BY name
         """
         try:
-            df = pd.read_sql(query, conn)
+            # Use SQLAlchemy engine with pandas
+            df = pd.read_sql(query, self.engine)
             print(f"✅ Found {len(df)} products in database")
             return df
         except Exception as e:
-            print("❌ Error fetching products:", e)
+            print(f"❌ Error fetching products: {e}")
             import traceback
             traceback.print_exc()
             return None
-        finally:
-            self.disconnect()
 
     def get_product_info(self, product_id):
         """Get single product information"""
@@ -767,10 +901,95 @@ class DatabaseConnection:
 
             return row
         except Exception as e:
-            print(f"❌ Error fetching product {product_id}:", e)
+            print(f"❌ Error fetching product {product_id}: {e}")
             return None
         finally:
             self.disconnect()
+
+    # def get_historical_data(self, product_id, days=90):
+        """
+        Returns a pandas DataFrame with columns: transaction_date, quantity_in, quantity_out
+        Aggregated by day
+        """
+        query = """
+            SELECT
+                DATE(st.timestamp) as transaction_date,
+                SUM(CASE WHEN st.type='IN' THEN st.quantity ELSE 0 END) as quantity_in,
+                SUM(CASE WHEN st.type='OUT' THEN st.quantity ELSE 0 END) as quantity_out
+            FROM stock_transactions st
+            WHERE st.product_id = %s
+              AND st.timestamp >= DATE_SUB(NOW(), INTERVAL %s DAY)
+            GROUP BY DATE(st.timestamp)
+            ORDER BY transaction_date ASC
+        """
+
+        try:
+            # Use SQLAlchemy engine with pandas and pass params
+            df = pd.read_sql(
+                query,
+                self.engine,
+                params=(product_id, days)
+            )
+
+            if len(df) > 0:
+                print(f"✅ Product {product_id}: Found {len(df)} days of transaction data")
+                print(f"   Total OUT: {df['quantity_out'].sum()}, Total IN: {df['quantity_in'].sum()}")
+            else:
+                print(f"⚠️  Product {product_id}: No transaction history found")
+
+            return df
+        except Exception as e:
+            print(f"❌ Error fetching historical data for product {product_id}: {e}")
+            import traceback
+            traceback.print_exc()
+            return None
+
+
+
+    # def get_historical_data(self, product_id, days=90):
+    #     """
+    #     Returns a pandas DataFrame with columns: transaction_date, quantity_in, quantity_out
+    #     Aggregated by day
+    #     """
+    #     conn = self.connect()
+    #     if not conn:
+    #         print("❌ Failed to connect for historical data")
+    #         return pd.DataFrame()  # Return empty DataFrame instead of None
+
+    #     query = """
+    #         SELECT
+    #             DATE(st.timestamp) as transaction_date,
+    #             SUM(CASE WHEN st.type='IN' THEN st.quantity ELSE 0 END) as quantity_in,
+    #             SUM(CASE WHEN st.type='OUT' THEN st.quantity ELSE 0 END) as quantity_out
+    #         FROM stock_transactions st
+    #         WHERE st.product_id = %s
+    #           AND st.timestamp >= DATE_SUB(NOW(), INTERVAL %s DAY)
+    #         GROUP BY DATE(st.timestamp)
+    #         ORDER BY transaction_date ASC
+    #     """
+
+    #     try:
+    #         cursor = conn.cursor(dictionary=True)
+    #         cursor.execute(query, (product_id, days))
+    #         results = cursor.fetchall()
+    #         cursor.close()
+
+    #         df = pd.DataFrame(results)
+
+    #         if len(df) > 0:
+    #             print(f"✅ Product {product_id}: Found {len(df)} days")
+    #         else:
+    #             print(f"⚠️  Product {product_id}: No history")
+
+    #         return df
+
+    #     except Exception as e:
+    #         print(f"❌ Error: {e}")
+    #         return pd.DataFrame()
+    #     finally:
+    #         self.disconnect()
+
+
 
     def get_historical_data(self, product_id, days=90):
         """
@@ -780,7 +999,7 @@ class DatabaseConnection:
         conn = self.connect()
         if not conn:
             print("❌ Failed to connect for historical data")
-            return None
+            return pd.DataFrame(columns=['transaction_date', 'quantity_in', 'quantity_out'])
 
         query = """
             SELECT
@@ -793,8 +1012,15 @@ class DatabaseConnection:
             GROUP BY DATE(st.timestamp)
             ORDER BY transaction_date ASC
         """
+
         try:
-            df = pd.read_sql(query, conn, params=(product_id, days))
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute(query, (product_id, days))
+            results = cursor.fetchall()
+            cursor.close()
+
+            # Convert to DataFrame
+            df = pd.DataFrame(results)
 
             if len(df) > 0:
                 print(f"✅ Product {product_id}: Found {len(df)} days of transaction data")
@@ -803,15 +1029,16 @@ class DatabaseConnection:
                 print(f"⚠️  Product {product_id}: No transaction history found")
 
             return df
+
         except Exception as e:
-            print(f"❌ Error fetching historical data for product {product_id}:", e)
+            print(f"❌ Error fetching historical data for product {product_id}: {e}")
             import traceback
             traceback.print_exc()
-            return None
+            # Return empty DataFrame instead of None
+            return pd.DataFrame(columns=['transaction_date', 'quantity_in', 'quantity_out'])
         finally:
             self.disconnect()
 
     def save_forecast(self, product_id, forecast_df):
         """Save forecast results (optional - for future use)"""
-        # Implementation here if you want to save forecasts to a table
         pass

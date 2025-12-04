@@ -1,3 +1,5 @@
+// backend/src/main/java/com/smartshelfx/service/AnalyticsService.java
+
 package com.smartshelfx.service;
 
 import com.smartshelfx.dto.AnalyticsResponse;

@@ -1,3 +1,5 @@
+// frontend/src/components/analytics/InventoryTrends.jsx
+
 import React, { useEffect, useState } from "react";
 import {
   LineChart,

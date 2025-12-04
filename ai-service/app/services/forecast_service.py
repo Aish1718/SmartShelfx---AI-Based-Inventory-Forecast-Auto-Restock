@@ -412,6 +412,7 @@
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
+import sys
 
 from app.models.forecast_model import DemandForecastModel
 from app.utils.database import DatabaseConnection
@@ -432,9 +433,23 @@ DEFAULT_FEATURES = [
 
 
 class ForecastService:
+    # def __init__(self):
+    #     self.db = DatabaseConnection()
+    #     self.model = DemandForecastModel()
+
+
+    # In the __init__ method
     def __init__(self):
-        self.db = DatabaseConnection()
-        self.model = DemandForecastModel()
+        try:
+            self.db = DatabaseConnection()
+            self.model = DemandForecastModel()
+            print("✅ ForecastService initialized successfully")
+        except Exception as e:
+            print(f"❌ Failed to initialize ForecastService: {e}")
+            import traceback
+            traceback.print_exc()
+
+
 
     def generate_forecast(self, product_id, forecast_days=None):
         if forecast_days is None:

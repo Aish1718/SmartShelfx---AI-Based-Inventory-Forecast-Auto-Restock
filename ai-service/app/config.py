@@ -57,6 +57,11 @@ class Config:
         "user": os.getenv("DB_USER", "root"),
         "password": os.getenv("DB_PASSWORD", "snowmoon$"),
         "database": os.getenv("DB_NAME", "smartshelfx"),
+        # ⭐ ADD THESE LINES
+        "autocommit": True,
+        "pool_size": 5,
+        "pool_reset_session": True,
+        "connect_timeout": 10,
     }
 
     # Gemini
