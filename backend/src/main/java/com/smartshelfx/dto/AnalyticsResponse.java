@@ -16,4 +16,7 @@ public class AnalyticsResponse {
     private List<String> labels;
     private List<Map<String, Object>> datasets;
     private Map<String, Object> metadata;
+    // ⭐ ADD THESE FIELDS
+    private List<Integer> stockIn;
+    private List<Integer> stockOut;
 }

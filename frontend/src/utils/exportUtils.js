@@ -48,8 +48,306 @@
 
 // frontend/src/utils/exportUtils.js
 
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+// import jsPDF from 'jspdf';
+// import 'jspdf-autotable';
+
+// /**
+//  * Export analytics data to CSV
+//  */
+// export const exportToCSV = (data, filename = 'analytics-report.csv') => {
+//   try {
+//     const { stats, topProducts, monthlyStock, trend } = data;
+
+//     // Create CSV content
+//     let csvContent = 'SmartShelfX Analytics Report\n\n';
+//     csvContent += `Generated on: ${new Date().toLocaleString()}\n\n`;
+
+//     // Dashboard Stats
+//     csvContent += 'DASHBOARD STATISTICS\n';
+//     csvContent += 'Metric,Value\n';
+//     csvContent += `Total Products,${stats.totalProducts}\n`;
+//     csvContent += `Total Value,$${stats.totalValue?.toLocaleString() || 0}\n`;
+//     csvContent += `Low Stock Items,${stats.lowStockCount}\n`;
+//     csvContent += `Active Orders,${stats.pendingOrders}\n\n`;
+
+//     // Top Products
+//     if (topProducts && topProducts.labels) {
+//       csvContent += 'TOP PRODUCTS\n';
+//       csvContent += 'Product,Movement\n';
+//       topProducts.labels.forEach((label, index) => {
+//         const value = topProducts.datasets[0]?.data[index] || 0;
+//         csvContent += `${label},${value}\n`;
+//       });
+//       csvContent += '\n';
+//     }
+
+//     // Monthly Stock Movement
+//     if (monthlyStock && monthlyStock.labels) {
+//       csvContent += 'MONTHLY STOCK MOVEMENT\n';
+//       csvContent += 'Month,Stock In,Stock Out\n';
+//       monthlyStock.labels.forEach((label, index) => {
+//         const stockIn = monthlyStock.stockIn[index] || 0;
+//         const stockOut = monthlyStock.stockOut[index] || 0;
+//         csvContent += `${label},${stockIn},${stockOut}\n`;
+//       });
+//       csvContent += '\n';
+//     }
+
+//     // Inventory Trend
+//     if (trend && trend.datasets) {
+//       csvContent += 'INVENTORY TREND\n';
+//       csvContent += 'Period,Value\n';
+//       const labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+//       labels.forEach((label, index) => {
+//         const value = trend.datasets[0]?.data[index] || 0;
+//         csvContent += `${label},$${value.toFixed(2)}\n`;
+//       });
+//     }
+
+//     // Create blob and download
+//     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+//     const link = document.createElement('a');
+//     const url = URL.createObjectURL(blob);
+
+//     link.setAttribute('href', url);
+//     link.setAttribute('download', filename);
+//     link.style.visibility = 'hidden';
+
+//     document.body.appendChild(link);
+//     link.click();
+//     document.body.removeChild(link);
+
+//     console.log('✅ CSV exported successfully');
+//     return true;
+//   } catch (error) {
+//     console.error('❌ CSV export failed:', error);
+//     throw error;
+//   }
+// };
+
+// /**
+//  * Export analytics data to PDF
+//  */
+// export const exportToPDF = async (data, filename = 'analytics-report.pdf') => {
+//   try {
+//     const { stats, topProducts, monthlyStock, trend } = data;
+
+//     // Create PDF document
+//     const doc = new jsPDF();
+//     let yPosition = 20;
+
+//     // Title
+//     doc.setFontSize(20);
+//     doc.setTextColor(59, 130, 246); // Blue color
+//     doc.text('SmartShelfX Analytics Report', 20, yPosition);
+
+//     yPosition += 10;
+//     doc.setFontSize(10);
+//     doc.setTextColor(100);
+//     doc.text(`Generated on: ${new Date().toLocaleString()}`, 20, yPosition);
+
+//     yPosition += 15;
+
+//     // Dashboard Statistics
+//     doc.setFontSize(14);
+//     doc.setTextColor(0);
+//     doc.text('Dashboard Statistics', 20, yPosition);
+//     yPosition += 8;
+
+//     doc.autoTable({
+//       startY: yPosition,
+//       head: [['Metric', 'Value']],
+//       body: [
+//         ['Total Products', stats.totalProducts.toString()],
+//         ['Total Value', `$${stats.totalValue?.toLocaleString() || 0}`],
+//         ['Low Stock Items', stats.lowStockCount.toString()],
+//         ['Active Orders', stats.pendingOrders.toString()],
+//       ],
+//       theme: 'grid',
+//       headStyles: { fillColor: [59, 130, 246] },
+//       margin: { left: 20 },
+//     });
+
+//     yPosition = doc.lastAutoTable.finalY + 15;
+
+//     // Top Products
+//     if (topProducts && topProducts.labels && topProducts.labels.length > 0) {
+//       doc.setFontSize(14);
+//       doc.text('Top Products', 20, yPosition);
+//       yPosition += 8;
+
+//       const topProductsData = topProducts.labels.map((label, index) => [
+//         label,
+//         (topProducts.datasets[0]?.data[index] || 0).toString(),
+//       ]);
+
+//       doc.autoTable({
+//         startY: yPosition,
+//         head: [['Product', 'Movement']],
+//         body: topProductsData,
+//         theme: 'grid',
+//         headStyles: { fillColor: [59, 130, 246] },
+//         margin: { left: 20 },
+//       });
+
+//       yPosition = doc.lastAutoTable.finalY + 15;
+//     }
+
+//     // Check if we need a new page
+//     if (yPosition > 250) {
+//       doc.addPage();
+//       yPosition = 20;
+//     }
+
+//     // Monthly Stock Movement
+//     if (monthlyStock && monthlyStock.labels && monthlyStock.labels.length > 0) {
+//       doc.setFontSize(14);
+//       doc.text('Monthly Stock Movement', 20, yPosition);
+//       yPosition += 8;
+
+//       const monthlyData = monthlyStock.labels.map((label, index) => [
+//         label,
+//         (monthlyStock.stockIn[index] || 0).toString(),
+//         (monthlyStock.stockOut[index] || 0).toString(),
+//       ]);
+
+//       doc.autoTable({
+//         startY: yPosition,
+//         head: [['Month', 'Stock In', 'Stock Out']],
+//         body: monthlyData,
+//         theme: 'grid',
+//         headStyles: { fillColor: [59, 130, 246] },
+//         margin: { left: 20 },
+//       });
+
+//       yPosition = doc.lastAutoTable.finalY + 15;
+//     }
+
+//     // Check if we need a new page
+//     if (yPosition > 250) {
+//       doc.addPage();
+//       yPosition = 20;
+//     }
+
+//     // Inventory Trend
+//     if (trend && trend.datasets && trend.datasets[0]) {
+//       doc.setFontSize(14);
+//       doc.text('Inventory Trend', 20, yPosition);
+//       yPosition += 8;
+
+//       const labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+//       const trendData = labels.map((label, index) => [
+//         label,
+//         `$${(trend.datasets[0].data[index] || 0).toFixed(2)}`,
+//       ]);
+
+//       doc.autoTable({
+//         startY: yPosition,
+//         head: [['Period', 'Inventory Value']],
+//         body: trendData,
+//         theme: 'grid',
+//         headStyles: { fillColor: [59, 130, 246] },
+//         margin: { left: 20 },
+//       });
+//     }
+
+//     // Footer
+//     const pageCount = doc.internal.getNumberOfPages();
+//     doc.setFontSize(8);
+//     doc.setTextColor(150);
+//     for (let i = 1; i <= pageCount; i++) {
+//       doc.setPage(i);
+//       doc.text(
+//         `Page ${i} of ${pageCount}`,
+//         doc.internal.pageSize.width / 2,
+//         doc.internal.pageSize.height - 10,
+//         { align: 'center' }
+//       );
+//     }
+
+//     // Save PDF
+//     doc.save(filename);
+
+//     console.log('✅ PDF exported successfully');
+//     return true;
+//   } catch (error) {
+//     console.error('❌ PDF export failed:', error);
+//     throw error;
+//   }
+// };
+
+// /**
+//  * Export data to Excel (XLSX)
+//  */
+// export const exportToExcel = async (data, filename = 'analytics-report.xlsx') => {
+//   try {
+//     // This requires xlsx library: npm install xlsx
+//     const XLSX = await import('xlsx');
+
+//     const { stats, topProducts, monthlyStock, trend } = data;
+
+//     // Create workbook
+//     const wb = XLSX.utils.book_new();
+
+//     // Dashboard Stats Sheet
+//     const statsData = [
+//       ['SmartShelfX Analytics Report'],
+//       [`Generated: ${new Date().toLocaleString()}`],
+//       [],
+//       ['Dashboard Statistics'],
+//       ['Metric', 'Value'],
+//       ['Total Products', stats.totalProducts],
+//       ['Total Value', `$${stats.totalValue?.toLocaleString() || 0}`],
+//       ['Low Stock Items', stats.lowStockCount],
+//       ['Active Orders', stats.pendingOrders],
+//     ];
+//     const statsSheet = XLSX.utils.aoa_to_sheet(statsData);
+//     XLSX.utils.book_append_sheet(wb, statsSheet, 'Dashboard');
+
+//     // Top Products Sheet
+//     if (topProducts && topProducts.labels) {
+//       const topProductsData = [
+//         ['Top Products'],
+//         ['Product', 'Movement'],
+//         ...topProducts.labels.map((label, index) => [
+//           label,
+//           topProducts.datasets[0]?.data[index] || 0,
+//         ]),
+//       ];
+//       const topSheet = XLSX.utils.aoa_to_sheet(topProductsData);
+//       XLSX.utils.book_append_sheet(wb, topSheet, 'Top Products');
+//     }
+
+//     // Monthly Stock Sheet
+//     if (monthlyStock && monthlyStock.labels) {
+//       const monthlyData = [
+//         ['Monthly Stock Movement'],
+//         ['Month', 'Stock In', 'Stock Out'],
+//         ...monthlyStock.labels.map((label, index) => [
+//           label,
+//           monthlyStock.stockIn[index] || 0,
+//           monthlyStock.stockOut[index] || 0,
+//         ]),
+//       ];
+//       const monthlySheet = XLSX.utils.aoa_to_sheet(monthlyData);
+//       XLSX.utils.book_append_sheet(wb, monthlySheet, 'Monthly Stock');
+//     }
+
+//     // Write file
+//     XLSX.writeFile(wb, filename);
+
+//     console.log('✅ Excel exported successfully');
+//     return true;
+//   } catch (error) {
+//     console.error('❌ Excel export failed:', error);
+//     throw error;
+//   }
+// };
+
+
+
+
+// frontend/src/utils/exportUtils.js
 
 /**
  * Export analytics data to CSV
@@ -58,6 +356,10 @@ export const exportToCSV = (data, filename = 'analytics-report.csv') => {
   try {
     const { stats, topProducts, monthlyStock, trend } = data;
 
+    if (!stats) {
+      throw new Error('No statistics data available');
+    }
+
     // Create CSV content
     let csvContent = 'SmartShelfX Analytics Report\n\n';
     csvContent += `Generated on: ${new Date().toLocaleString()}\n\n`;
@@ -65,41 +367,41 @@ export const exportToCSV = (data, filename = 'analytics-report.csv') => {
     // Dashboard Stats
     csvContent += 'DASHBOARD STATISTICS\n';
     csvContent += 'Metric,Value\n';
-    csvContent += `Total Products,${stats.totalProducts}\n`;
+    csvContent += `Total Products,${stats.totalProducts || 0}\n`;
     csvContent += `Total Value,$${stats.totalValue?.toLocaleString() || 0}\n`;
-    csvContent += `Low Stock Items,${stats.lowStockCount}\n`;
-    csvContent += `Active Orders,${stats.pendingOrders}\n\n`;
+    csvContent += `Low Stock Items,${stats.lowStockCount || 0}\n`;
+    csvContent += `Active Orders,${stats.pendingOrders || 0}\n\n`;
 
     // Top Products
-    if (topProducts && topProducts.labels) {
+    if (topProducts?.labels?.length > 0) {
       csvContent += 'TOP PRODUCTS\n';
       csvContent += 'Product,Movement\n';
       topProducts.labels.forEach((label, index) => {
-        const value = topProducts.datasets[0]?.data[index] || 0;
-        csvContent += `${label},${value}\n`;
+        const value = topProducts.datasets?.[0]?.data?.[index] || 0;
+        csvContent += `"${label}",${value}\n`;
       });
       csvContent += '\n';
     }
 
     // Monthly Stock Movement
-    if (monthlyStock && monthlyStock.labels) {
+    if (monthlyStock?.labels?.length > 0) {
       csvContent += 'MONTHLY STOCK MOVEMENT\n';
       csvContent += 'Month,Stock In,Stock Out\n';
       monthlyStock.labels.forEach((label, index) => {
-        const stockIn = monthlyStock.stockIn[index] || 0;
-        const stockOut = monthlyStock.stockOut[index] || 0;
+        const stockIn = monthlyStock.stockIn?.[index] || 0;
+        const stockOut = monthlyStock.stockOut?.[index] || 0;
         csvContent += `${label},${stockIn},${stockOut}\n`;
       });
       csvContent += '\n';
     }
 
     // Inventory Trend
-    if (trend && trend.datasets) {
+    if (trend?.datasets?.[0]?.data?.length > 0) {
       csvContent += 'INVENTORY TREND\n';
       csvContent += 'Period,Value\n';
       const labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
       labels.forEach((label, index) => {
-        const value = trend.datasets[0]?.data[index] || 0;
+        const value = trend.datasets[0].data[index] || 0;
         csvContent += `${label},$${value.toFixed(2)}\n`;
       });
     }
@@ -116,230 +418,180 @@ export const exportToCSV = (data, filename = 'analytics-report.csv') => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
 
     console.log('✅ CSV exported successfully');
     return true;
   } catch (error) {
     console.error('❌ CSV export failed:', error);
-    throw error;
+    throw new Error(`CSV export failed: ${error.message}`);
   }
 };
 
 /**
- * Export analytics data to PDF
+ * Export analytics data to PDF (without jsPDF - simpler version)
  */
 export const exportToPDF = async (data, filename = 'analytics-report.pdf') => {
   try {
+    // Check if jsPDF is available
+    if (typeof window.jspdf === 'undefined') {
+      // Fallback: Create a simple HTML report and print to PDF
+      return exportToPDFSimple(data, filename);
+    }
+
+    const { jsPDF } = window.jspdf;
     const { stats, topProducts, monthlyStock, trend } = data;
 
-    // Create PDF document
+    if (!stats) {
+      throw new Error('No statistics data available');
+    }
+
     const doc = new jsPDF();
-    let yPosition = 20;
+    let yPos = 20;
 
     // Title
     doc.setFontSize(20);
-    doc.setTextColor(59, 130, 246); // Blue color
-    doc.text('SmartShelfX Analytics Report', 20, yPosition);
+    doc.setTextColor(59, 130, 246);
+    doc.text('SmartShelfX Analytics Report', 20, yPos);
 
-    yPosition += 10;
+    yPos += 10;
     doc.setFontSize(10);
     doc.setTextColor(100);
-    doc.text(`Generated on: ${new Date().toLocaleString()}`, 20, yPosition);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 20, yPos);
 
-    yPosition += 15;
+    yPos += 15;
 
-    // Dashboard Statistics
+    // Dashboard Stats
     doc.setFontSize(14);
     doc.setTextColor(0);
-    doc.text('Dashboard Statistics', 20, yPosition);
-    yPosition += 8;
+    doc.text('Dashboard Statistics', 20, yPos);
+    yPos += 10;
 
-    doc.autoTable({
-      startY: yPosition,
-      head: [['Metric', 'Value']],
-      body: [
-        ['Total Products', stats.totalProducts.toString()],
-        ['Total Value', `$${stats.totalValue?.toLocaleString() || 0}`],
-        ['Low Stock Items', stats.lowStockCount.toString()],
-        ['Active Orders', stats.pendingOrders.toString()],
-      ],
-      theme: 'grid',
-      headStyles: { fillColor: [59, 130, 246] },
-      margin: { left: 20 },
-    });
-
-    yPosition = doc.lastAutoTable.finalY + 15;
+    doc.setFontSize(10);
+    doc.text(`Total Products: ${stats.totalProducts || 0}`, 30, yPos);
+    yPos += 7;
+    doc.text(`Total Value: $${stats.totalValue?.toLocaleString() || 0}`, 30, yPos);
+    yPos += 7;
+    doc.text(`Low Stock Items: ${stats.lowStockCount || 0}`, 30, yPos);
+    yPos += 7;
+    doc.text(`Active Orders: ${stats.pendingOrders || 0}`, 30, yPos);
+    yPos += 15;
 
     // Top Products
-    if (topProducts && topProducts.labels && topProducts.labels.length > 0) {
+    if (topProducts?.labels?.length > 0) {
       doc.setFontSize(14);
-      doc.text('Top Products', 20, yPosition);
-      yPosition += 8;
+      doc.text('Top Products', 20, yPos);
+      yPos += 10;
 
-      const topProductsData = topProducts.labels.map((label, index) => [
-        label,
-        (topProducts.datasets[0]?.data[index] || 0).toString(),
-      ]);
-
-      doc.autoTable({
-        startY: yPosition,
-        head: [['Product', 'Movement']],
-        body: topProductsData,
-        theme: 'grid',
-        headStyles: { fillColor: [59, 130, 246] },
-        margin: { left: 20 },
+      doc.setFontSize(10);
+      topProducts.labels.slice(0, 5).forEach((label, index) => {
+        const value = topProducts.datasets?.[0]?.data?.[index] || 0;
+        doc.text(`${index + 1}. ${label}: ${value}`, 30, yPos);
+        yPos += 7;
       });
-
-      yPosition = doc.lastAutoTable.finalY + 15;
+      yPos += 10;
     }
 
-    // Check if we need a new page
-    if (yPosition > 250) {
-      doc.addPage();
-      yPosition = 20;
-    }
-
-    // Monthly Stock Movement
-    if (monthlyStock && monthlyStock.labels && monthlyStock.labels.length > 0) {
-      doc.setFontSize(14);
-      doc.text('Monthly Stock Movement', 20, yPosition);
-      yPosition += 8;
-
-      const monthlyData = monthlyStock.labels.map((label, index) => [
-        label,
-        (monthlyStock.stockIn[index] || 0).toString(),
-        (monthlyStock.stockOut[index] || 0).toString(),
-      ]);
-
-      doc.autoTable({
-        startY: yPosition,
-        head: [['Month', 'Stock In', 'Stock Out']],
-        body: monthlyData,
-        theme: 'grid',
-        headStyles: { fillColor: [59, 130, 246] },
-        margin: { left: 20 },
-      });
-
-      yPosition = doc.lastAutoTable.finalY + 15;
-    }
-
-    // Check if we need a new page
-    if (yPosition > 250) {
-      doc.addPage();
-      yPosition = 20;
-    }
-
-    // Inventory Trend
-    if (trend && trend.datasets && trend.datasets[0]) {
-      doc.setFontSize(14);
-      doc.text('Inventory Trend', 20, yPosition);
-      yPosition += 8;
-
-      const labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
-      const trendData = labels.map((label, index) => [
-        label,
-        `$${(trend.datasets[0].data[index] || 0).toFixed(2)}`,
-      ]);
-
-      doc.autoTable({
-        startY: yPosition,
-        head: [['Period', 'Inventory Value']],
-        body: trendData,
-        theme: 'grid',
-        headStyles: { fillColor: [59, 130, 246] },
-        margin: { left: 20 },
-      });
-    }
-
-    // Footer
-    const pageCount = doc.internal.getNumberOfPages();
-    doc.setFontSize(8);
-    doc.setTextColor(150);
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.text(
-        `Page ${i} of ${pageCount}`,
-        doc.internal.pageSize.width / 2,
-        doc.internal.pageSize.height - 10,
-        { align: 'center' }
-      );
-    }
-
-    // Save PDF
+    // Save
     doc.save(filename);
-
     console.log('✅ PDF exported successfully');
     return true;
   } catch (error) {
     console.error('❌ PDF export failed:', error);
-    throw error;
+    throw new Error(`PDF export failed: ${error.message}`);
   }
 };
 
 /**
- * Export data to Excel (XLSX)
+ * Simple PDF export using print dialog
+ */
+const exportToPDFSimple = (data, filename) => {
+  const { stats, topProducts, monthlyStock } = data;
+
+  // Create a new window with formatted content
+  const printWindow = window.open('', '_blank');
+
+  let html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>SmartShelfX Analytics Report</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 40px; }
+        h1 { color: #3B82F6; }
+        h2 { color: #333; margin-top: 30px; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #3B82F6; color: white; }
+        .stat { margin: 10px 0; }
+        @media print {
+          button { display: none; }
+        }
+      </style>
+    </head>
+    <body>
+      <h1>SmartShelfX Analytics Report</h1>
+      <p>Generated: ${new Date().toLocaleString()}</p>
+
+      <h2>Dashboard Statistics</h2>
+      <div class="stat">Total Products: <strong>${stats.totalProducts || 0}</strong></div>
+      <div class="stat">Total Value: <strong>$${stats.totalValue?.toLocaleString() || 0}</strong></div>
+      <div class="stat">Low Stock Items: <strong>${stats.lowStockCount || 0}</strong></div>
+      <div class="stat">Active Orders: <strong>${stats.pendingOrders || 0}</strong></div>
+
+      ${topProducts?.labels?.length > 0 ? `
+        <h2>Top Products</h2>
+        <table>
+          <tr><th>Product</th><th>Movement</th></tr>
+          ${topProducts.labels.map((label, i) => `
+            <tr>
+              <td>${label}</td>
+              <td>${topProducts.datasets?.[0]?.data?.[i] || 0}</td>
+            </tr>
+          `).join('')}
+        </table>
+      ` : ''}
+
+      ${monthlyStock?.labels?.length > 0 ? `
+        <h2>Monthly Stock Movement</h2>
+        <table>
+          <tr><th>Month</th><th>Stock In</th><th>Stock Out</th></tr>
+          ${monthlyStock.labels.map((label, i) => `
+            <tr>
+              <td>${label}</td>
+              <td>${monthlyStock.stockIn?.[i] || 0}</td>
+              <td>${monthlyStock.stockOut?.[i] || 0}</td>
+            </tr>
+          `).join('')}
+        </table>
+      ` : ''}
+
+      <button onclick="window.print()">Print / Save as PDF</button>
+    </body>
+    </html>
+  `;
+
+  printWindow.document.write(html);
+  printWindow.document.close();
+
+  // Auto-print after load
+  printWindow.onload = () => {
+    setTimeout(() => printWindow.print(), 500);
+  };
+
+  return true;
+};
+
+/**
+ * Export to Excel - Simple version without xlsx library
  */
 export const exportToExcel = async (data, filename = 'analytics-report.xlsx') => {
   try {
-    // This requires xlsx library: npm install xlsx
-    const XLSX = await import('xlsx');
-
-    const { stats, topProducts, monthlyStock, trend } = data;
-
-    // Create workbook
-    const wb = XLSX.utils.book_new();
-
-    // Dashboard Stats Sheet
-    const statsData = [
-      ['SmartShelfX Analytics Report'],
-      [`Generated: ${new Date().toLocaleString()}`],
-      [],
-      ['Dashboard Statistics'],
-      ['Metric', 'Value'],
-      ['Total Products', stats.totalProducts],
-      ['Total Value', `$${stats.totalValue?.toLocaleString() || 0}`],
-      ['Low Stock Items', stats.lowStockCount],
-      ['Active Orders', stats.pendingOrders],
-    ];
-    const statsSheet = XLSX.utils.aoa_to_sheet(statsData);
-    XLSX.utils.book_append_sheet(wb, statsSheet, 'Dashboard');
-
-    // Top Products Sheet
-    if (topProducts && topProducts.labels) {
-      const topProductsData = [
-        ['Top Products'],
-        ['Product', 'Movement'],
-        ...topProducts.labels.map((label, index) => [
-          label,
-          topProducts.datasets[0]?.data[index] || 0,
-        ]),
-      ];
-      const topSheet = XLSX.utils.aoa_to_sheet(topProductsData);
-      XLSX.utils.book_append_sheet(wb, topSheet, 'Top Products');
-    }
-
-    // Monthly Stock Sheet
-    if (monthlyStock && monthlyStock.labels) {
-      const monthlyData = [
-        ['Monthly Stock Movement'],
-        ['Month', 'Stock In', 'Stock Out'],
-        ...monthlyStock.labels.map((label, index) => [
-          label,
-          monthlyStock.stockIn[index] || 0,
-          monthlyStock.stockOut[index] || 0,
-        ]),
-      ];
-      const monthlySheet = XLSX.utils.aoa_to_sheet(monthlyData);
-      XLSX.utils.book_append_sheet(wb, monthlySheet, 'Monthly Stock');
-    }
-
-    // Write file
-    XLSX.writeFile(wb, filename);
-
-    console.log('✅ Excel exported successfully');
-    return true;
+    // For now, export as CSV with .xls extension (Excel can open it)
+    const csvFilename = filename.replace('.xlsx', '.xls');
+    return exportToCSV(data, csvFilename);
   } catch (error) {
     console.error('❌ Excel export failed:', error);
-    throw error;
+    throw new Error(`Excel export failed: ${error.message}`);
   }
 };

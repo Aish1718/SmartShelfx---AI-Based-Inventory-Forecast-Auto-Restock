@@ -233,8 +233,53 @@ public class AnalyticsService {
     }
 
 
-    public AnalyticsResponse getMonthlyStockMovement() {
+//     public AnalyticsResponse getMonthlyStockMovement() {
 
+
+//     List<Object[]> rows = transactionRepository.getMonthlyStockMovement();
+
+//     List<String> labels = new ArrayList<>();
+//     List<Integer> stockIn = new ArrayList<>();
+//     List<Integer> stockOut = new ArrayList<>();
+
+//     String[] monthNames = {
+//         "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+//         "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+//     };
+
+//     for (Object[] row : rows) {
+//         Integer monthNumber = ((Number) row[0]).intValue();
+//         Integer inQty = ((Number) row[1]).intValue();
+//         Integer outQty = ((Number) row[2]).intValue();
+
+//         labels.add(monthNames[monthNumber - 1]);
+//         stockIn.add(inQty);
+//         stockOut.add(outQty);
+//     }
+
+//     AnalyticsResponse response = new AnalyticsResponse();
+//     response.setTitle("Monthly Stock Movement");
+//     response.setLabels(labels);
+
+//     Map<String, Object> inDataset = new HashMap<>();
+//     inDataset.put("label", "Stock In");
+//     inDataset.put("data", stockIn);
+
+//     Map<String, Object> outDataset = new HashMap<>();
+//     outDataset.put("label", "Stock Out");
+//     outDataset.put("data", stockOut);
+
+//     response.setDatasets(List.of(inDataset, outDataset));
+
+//     return response;
+// }
+
+
+
+
+    // backend/src/main/java/com/smartshelfx/service/AnalyticsService.java
+
+public AnalyticsResponse getMonthlyStockMovement() {
     List<Object[]> rows = transactionRepository.getMonthlyStockMovement();
 
     List<String> labels = new ArrayList<>();
@@ -246,20 +291,32 @@ public class AnalyticsService {
         "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
     };
 
-    for (Object[] row : rows) {
-        Integer monthNumber = ((Number) row[0]).intValue();
-        Integer inQty = ((Number) row[1]).intValue();
-        Integer outQty = ((Number) row[2]).intValue();
+    // ⭐ FIX: Handle empty results
+    if (rows == null || rows.isEmpty()) {
+        // Return dummy data for current month
+        int currentMonth = LocalDateTime.now().getMonthValue();
+        labels.add(monthNames[currentMonth - 1]);
+        stockIn.add(0);
+        stockOut.add(0);
+    } else {
+        for (Object[] row : rows) {
+            Integer monthNumber = ((Number) row[0]).intValue();
+            Integer inQty = ((Number) row[1]).intValue();
+            Integer outQty = ((Number) row[2]).intValue();
 
-        labels.add(monthNames[monthNumber - 1]);
-        stockIn.add(inQty);
-        stockOut.add(outQty);
+            labels.add(monthNames[monthNumber - 1]);
+            stockIn.add(inQty);
+            stockOut.add(outQty);
+        }
     }
 
     AnalyticsResponse response = new AnalyticsResponse();
     response.setTitle("Monthly Stock Movement");
     response.setLabels(labels);
+    response.setStockIn(stockIn);  // ⭐ ADD THIS FIELD
+    response.setStockOut(stockOut); // ⭐ ADD THIS FIELD
 
+    // Also add as datasets for compatibility
     Map<String, Object> inDataset = new HashMap<>();
     inDataset.put("label", "Stock In");
     inDataset.put("data", stockIn);
