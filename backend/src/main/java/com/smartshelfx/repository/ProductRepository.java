@@ -18,6 +18,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     List<Product> findByNameContainingIgnoreCase(String name);
 
+    List<Product> findByCreatedBy_Id(Long managerId);
+
+
     @Query("SELECT p FROM Product p WHERE p.currentStock < p.reorderLevel")
     List<Product> findLowStockProducts();
 

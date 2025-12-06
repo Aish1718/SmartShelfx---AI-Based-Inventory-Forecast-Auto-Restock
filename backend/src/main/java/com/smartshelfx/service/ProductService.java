@@ -13,6 +13,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
+import com.smartshelfx.security.UserPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+
 
 @Service
 @RequiredArgsConstructor
@@ -44,6 +48,15 @@ public class ProductService {
 
         Product product = new Product();
         mapDtoToEntity(dto, product);
+
+        // ⭐ ADD THIS — Set createdBy = logged-in manager/admin
+        UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder
+                .getContext().getAuthentication().getPrincipal();
+
+        User creator = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        product.setCreatedBy(creator);
 
         return productRepository.save(product);
     }
@@ -82,6 +95,11 @@ public class ProductService {
     public List<String> getAllCategories() {
         return productRepository.findAllCategories();
     }
+
+    public List<Product> getProductsByManager(Long managerId) {
+    return productRepository.findByCreatedBy_Id(managerId);
+}
+
 
     @Transactional
     public List<Product> importFromCSV(MultipartFile file) {

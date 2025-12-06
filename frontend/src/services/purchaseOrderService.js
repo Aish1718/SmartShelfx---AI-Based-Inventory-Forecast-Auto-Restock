@@ -59,6 +59,11 @@ export const purchaseOrderService = {
     return await api.get(`/purchase-orders/vendor/${vendorId}`);
   },
 
+  // ⭐ ADD THIS
+  getPurchaseOrdersByManager: async (managerId) => {
+      return await api.get(`/purchase-orders/manager/${managerId}`);
+  },
+
   // Create new purchase order
   createPurchaseOrder: async (orderData) => {
     return await api.post('/purchase-orders', orderData);

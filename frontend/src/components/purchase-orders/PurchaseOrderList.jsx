@@ -273,6 +273,7 @@ const PurchaseOrderList = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
+
   useEffect(() => {
     fetchOrders();
   }, []);
@@ -281,24 +282,82 @@ const PurchaseOrderList = () => {
     filterOrders();
   }, [statusFilter, orders]);
 
+  // const fetchOrders = async () => {
+  //   try {
+  //     let response;
+
+  //     if (isVendor) {
+  //       response = await purchaseOrderService.getPurchaseOrdersByVendor(user.id);
+  //     }
+  //     else if (isManager) {
+  //     response = await purchaseOrderService.getPurchaseOrdersByManager(user.id);
+  //     }
+  //     else {
+  //       response = await purchaseOrderService.getAllPurchaseOrders();
+  //     }
+
+  //     setOrders(response.data);
+  //   } catch (error) {
+  //     console.error("Error fetching orders:", error);
+  //   } finally {
+  //     setLoading(false);
+  //     setRefreshing(false);
+  //   }
+  // };
+
+
+//   const fetchOrders = async () => {
+//   try {
+//     let response;
+
+//     if (isVendor) {
+//       response = await purchaseOrderService.getPurchaseOrdersByVendor(user.id);
+//     }
+//     else if (isManager) {
+//       response = await purchaseOrderService.getPurchaseOrdersByManager(user.id);
+//     }
+//     else {
+//       response = await purchaseOrderService.getAllPurchaseOrders();
+//     }
+
+//     setOrders(response.data);
+//   } catch (error) {
+//     console.error("Error fetching orders:", error);
+//   } finally {
+//     setLoading(false);
+//     setRefreshing(false);
+//   }
+// };
+
+
   const fetchOrders = async () => {
-    try {
-      let response;
+  try {
+    let response;
 
-      if (isVendor) {
-        response = await purchaseOrderService.getPurchaseOrdersByVendor(user.id);
-      } else {
-        response = await purchaseOrderService.getAllPurchaseOrders();
-      }
+    // Get ID from localStorage (because AuthContext doesn't have it)
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    const userId = storedUser?.id;
 
-      setOrders(response.data);
-    } catch (error) {
-      console.error("Error fetching orders:", error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
+    if (isVendor) {
+      response = await purchaseOrderService.getPurchaseOrdersByVendor(userId);
     }
-  };
+    else if (isManager) {
+      response = await purchaseOrderService.getPurchaseOrdersByManager(userId);
+    }
+    else {
+      response = await purchaseOrderService.getAllPurchaseOrders();
+    }
+
+    setOrders(response.data);
+
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+  } finally {
+    setLoading(false);
+    setRefreshing(false);
+  }
+};
+
 
   const filterOrders = () => {
     if (statusFilter === "all") {

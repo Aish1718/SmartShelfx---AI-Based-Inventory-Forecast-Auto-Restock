@@ -27,5 +27,10 @@ export const productService = {
     return api.post('/products/import-csv', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
-  }
+  },
+
+  getProductsByManager: async (managerId) => {
+    return await api.get(`/products/manager/${managerId}`);
+  },
+
 };

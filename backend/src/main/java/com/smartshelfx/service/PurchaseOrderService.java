@@ -41,58 +41,130 @@ public class PurchaseOrderService {
     private final AIForecastService forecastService;
     private final StockTransactionService stockTransactionService;
     private final StockTransactionRepository transactionRepository;
+
+
     //private final StockTransactionRepository stockTransactionRepository;
 
 
 
 
     @Transactional
-    public PurchaseOrderDTO createPurchaseOrder(PurchaseOrderRequest request) {
-        // Validate product
-        Product product = productRepository.findById(request.getProductId())
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+    // public PurchaseOrderDTO createPurchaseOrder(PurchaseOrderRequest request) {
+    //     // Validate product
+    //     Product product = productRepository.findById(request.getProductId())
+    //             .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
-        // Validate vendor
-        User vendor = userRepository.findById(request.getVendorId())
-                .orElseThrow(() -> new ResourceNotFoundException("Vendor not found"));
+    //     // Validate vendor
+    //     User vendor = userRepository.findById(request.getVendorId())
+    //             .orElseThrow(() -> new ResourceNotFoundException("Vendor not found"));
 
-        if (vendor.getRole() != Role.VENDOR) {
-            throw new BadRequestException("Selected user is not a vendor");
-        }
+    //     if (vendor.getRole() != Role.VENDOR) {
+    //         throw new BadRequestException("Selected user is not a vendor");
+    //     }
 
-        // Create purchase order
-        PurchaseOrder po = new PurchaseOrder();
-        po.setProduct(product);
-        po.setVendor(vendor);
-        po.setQuantity(request.getQuantity());
-        po.setStatus(OrderStatus.PENDING);
-        po.setOrderDate(LocalDateTime.now());
-        po.setExpectedDelivery(request.getExpectedDelivery() != null ?
-                               request.getExpectedDelivery() :
-                               LocalDate.now().plusDays(7));
-        po.setNotes(request.getNotes());
-        po.setIsAiGenerated(request.getIsAiGenerated() != null ? request.getIsAiGenerated() : false);
+    //     // Get logged-in manager creating the PO
+    //     UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext()
+    //             .getAuthentication().getPrincipal();
 
-        // Calculate total cost
-        if (product.getPrice() != null) {
-            po.setTotalCost(
-                BigDecimal.valueOf(product.getPrice())
-                    .multiply(BigDecimal.valueOf(request.getQuantity()))
-            );
-        }
+    //     User creator = userRepository.findById(userPrincipal.getId())
+    //             .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        PurchaseOrder savedPO = poRepository.save(po);
+    //     po.setCreatedBy(creator);
 
-        // Send email notification to vendor
-        try {
-            emailService.sendPurchaseOrderNotification(savedPO);
-        } catch (Exception e) {
-            // Log error but don't fail the transaction
-            System.err.println("Failed to send email: " + e.getMessage());
-        }
 
-        return convertToDTO(savedPO);
+    //     // Create purchase order
+    //     PurchaseOrder po = new PurchaseOrder();
+    //     po.setProduct(product);
+    //     po.setVendor(vendor);
+    //     po.setQuantity(request.getQuantity());
+    //     po.setStatus(OrderStatus.PENDING);
+    //     po.setOrderDate(LocalDateTime.now());
+    //     po.setExpectedDelivery(request.getExpectedDelivery() != null ?
+    //                            request.getExpectedDelivery() :
+    //                            LocalDate.now().plusDays(7));
+    //     po.setNotes(request.getNotes());
+    //     po.setIsAiGenerated(request.getIsAiGenerated() != null ? request.getIsAiGenerated() : false);
+
+    //     // Calculate total cost
+    //     if (product.getPrice() != null) {
+    //         po.setTotalCost(
+    //             BigDecimal.valueOf(product.getPrice())
+    //                 .multiply(BigDecimal.valueOf(request.getQuantity()))
+    //         );
+    //     }
+
+    //     PurchaseOrder savedPO = poRepository.save(po);
+
+    //     // Send email notification to vendor
+    //     try {
+    //         emailService.sendPurchaseOrderNotification(savedPO);
+    //     } catch (Exception e) {
+    //         // Log error but don't fail the transaction
+    //         System.err.println("Failed to send email: " + e.getMessage());
+    //     }
+
+    //     return convertToDTO(savedPO);
+    // }
+
+public PurchaseOrderDTO createPurchaseOrder(PurchaseOrderRequest request) {
+
+    // Validate product
+    Product product = productRepository.findById(request.getProductId())
+            .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+    // Validate vendor
+    User vendor = userRepository.findById(request.getVendorId())
+            .orElseThrow(() -> new ResourceNotFoundException("Vendor not found"));
+
+    if (vendor.getRole() != Role.VENDOR) {
+        throw new BadRequestException("Selected user is not a vendor");
     }
+
+    // ⭐ Get logged-in manager creating the PO
+    UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext()
+            .getAuthentication().getPrincipal();
+
+    User creator = userRepository.findById(userPrincipal.getId())
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+    // ⭐ NOW create purchase order (po exists)
+    PurchaseOrder po = new PurchaseOrder();
+    po.setProduct(product);
+    po.setVendor(vendor);
+    po.setQuantity(request.getQuantity());
+    po.setStatus(OrderStatus.PENDING);
+    po.setOrderDate(LocalDateTime.now());
+    po.setExpectedDelivery(
+            request.getExpectedDelivery() != null ?
+                    request.getExpectedDelivery() :
+                    LocalDate.now().plusDays(7)
+    );
+    po.setNotes(request.getNotes());
+    po.setIsAiGenerated(request.getIsAiGenerated() != null ? request.getIsAiGenerated() : false);
+
+    // ⭐ NOW THIS WORKS (previously wrong location!)
+    po.setCreatedBy(creator);
+
+    // Calculate total cost
+    if (product.getPrice() != null) {
+        po.setTotalCost(
+                BigDecimal.valueOf(product.getPrice())
+                        .multiply(BigDecimal.valueOf(request.getQuantity()))
+        );
+    }
+
+    PurchaseOrder savedPO = poRepository.save(po);
+
+    // Send email notification to vendor
+    try {
+        emailService.sendPurchaseOrderNotification(savedPO);
+    } catch (Exception e) {
+        System.err.println("Failed to send email: " + e.getMessage());
+    }
+
+    return convertToDTO(savedPO);
+}
+
 
     public List<PurchaseOrderDTO> getAllPurchaseOrders() {
         return poRepository.findAllOrderByOrderDateDesc()
@@ -113,6 +185,14 @@ public class PurchaseOrderService {
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
+
+    public List<PurchaseOrderDTO> getPurchaseOrdersByManager(Long managerId) {
+        return poRepository.findByCreatedBy_Id(managerId)
+            .stream()
+            .map(this::convertToDTO)
+            .collect(Collectors.toList());
+    }
+
 
     public List<PurchaseOrderDTO> getPurchaseOrdersByVendor(Long vendorId) {
         return poRepository.findByVendorId(vendorId)
@@ -172,7 +252,7 @@ public class PurchaseOrderService {
     // }
 
     @Transactional
-public PurchaseOrderDTO updateOrderStatus(Long id, OrderStatusUpdateDTO updateDTO) {
+    public PurchaseOrderDTO updateOrderStatus(Long id, OrderStatusUpdateDTO updateDTO) {
 
     PurchaseOrder po = poRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Purchase order not found"));

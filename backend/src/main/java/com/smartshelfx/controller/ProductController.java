@@ -1,8 +1,11 @@
 package com.smartshelfx.controller;
 
 import com.smartshelfx.dto.ProductDTO;
+import com.smartshelfx.dto.PurchaseOrderDTO;
 import com.smartshelfx.model.Product;
 import com.smartshelfx.service.ProductService;
+import com.smartshelfx.service.PurchaseOrderService;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,6 +23,8 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
+    private final PurchaseOrderService purchaseOrderService;
+
 
     @GetMapping
     public ResponseEntity<List<Product>> getAllProducts() {

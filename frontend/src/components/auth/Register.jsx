@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { Package } from 'lucide-react';
+import { useEffect } from 'react';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -11,11 +12,19 @@ const Register = () => {
     confirmPassword: '',
     role: 'MANAGER',
   });
+
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { register } = useContext(AuthContext);
+  const { register, user } = useContext(AuthContext);
   const navigate = useNavigate();
 
+
+  useEffect(() => {
+  // If not logged in OR not admin, block access
+  if (!user || user.role !== 'ADMIN') {
+    navigate('/login');
+  }
+ }, [user, navigate]);
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };

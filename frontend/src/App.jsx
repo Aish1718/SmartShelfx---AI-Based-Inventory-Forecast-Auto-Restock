@@ -220,6 +220,12 @@ import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 import VendorDashboard from './components/vendor/dashboard/VendorDashboard';
 
+
+import ViewUsers from "./components/admin/ViewUsers";
+import PurchaseOrderDetails from "./components/purchase-orders/PurchaseOrderDetails";
+
+
+
 import "./index.css";
 
 // Main admin layout
@@ -388,6 +394,31 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          <Route
+            path="/admin/users"
+              element={
+                <ProtectedRoute roles={["ADMIN"]}>
+                  <Layout>
+                    <ViewUsers />
+                  </Layout>
+                </ProtectedRoute>
+            }
+          />
+
+
+          <Route
+              path="/purchase-orders/:id"
+              element={
+                <ProtectedRoute roles={["ADMIN", "MANAGER", "VENDOR"]}>
+                  <Layout>
+                    <PurchaseOrderDetails />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+
+
 
           {/* 404 fallback */}
           <Route path="*" element={<LandingPage />} />

@@ -64,6 +64,8 @@
 import React, { useContext } from 'react';
 import { NavLink } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
+import { Users } from 'lucide-react';
+
 
 import {
   LayoutDashboard,
@@ -102,6 +104,25 @@ const Sidebar = () => {
       { path: '/analytics', icon: BarChart3, label: 'Analytics' },
     ];
   }
+
+    // Add extra admin-only item
+    if (role === "ADMIN") {
+      menuItems.push({
+        path: '/register',
+        icon: Users,
+        label: 'User Management'
+      });
+    }
+
+    if (role === "ADMIN") {
+  menuItems.push({
+    path: '/admin/users',
+    icon: Users,
+    label: 'View Users'
+  });
+}
+
+
 
   // ----------------------------
   // VENDOR MENU

@@ -18,6 +18,9 @@ public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder, Lo
 
     List<PurchaseOrder> findByProductId(Long productId);
 
+    List<PurchaseOrder> findByCreatedBy_Id(Long managerId);
+
+
     @Query("SELECT COUNT(po) FROM PurchaseOrder po WHERE po.status = :status")
     Long countByStatus(@Param("status") OrderStatus status);
 

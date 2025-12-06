@@ -610,14 +610,20 @@
 
 
 
+// path: frontend/src/components/purchase-orders/PurchaseOrderTable.jsx
+
 import React, { useState, useContext } from 'react';
 import { Edit2, Trash2 } from 'lucide-react';
 import { purchaseOrderService } from '../../services/purchaseOrderService';
 import { AuthContext } from '../../context/AuthContext';
 import POStatusModal from './POStatusModal';
+import { useNavigate } from "react-router-dom";
+
 
 const PurchaseOrderTable = ({ orders, onRefresh, loading }) => {
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
+
 
   // ===============================================
   // ROLE NORMALIZATION (IMPORTANT!)
@@ -697,6 +703,8 @@ const PurchaseOrderTable = ({ orders, onRefresh, loading }) => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Cost</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Expected</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Details</th>
+
 
                 {/* Vendor-only: Status badge */}
                 {isVendor && (
@@ -735,6 +743,15 @@ const PurchaseOrderTable = ({ orders, onRefresh, loading }) => {
 
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                     {formatDate(order.expectedDelivery)}
+                  </td>
+
+                  <td>
+                    <button
+                      onClick={() => navigate(`/purchase-orders/${order.id}`)}
+                      className="text-indigo-600 hover:text-indigo-800 font-semibold"
+                    >
+                      View Details
+                    </button>
                   </td>
 
                   {/* Vendor-only status badge */}

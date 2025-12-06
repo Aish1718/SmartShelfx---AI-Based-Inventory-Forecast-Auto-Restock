@@ -73,4 +73,10 @@ public class PurchaseOrder {
 
     @Column(name = "approved_at")
     private LocalDateTime approvedAt;
+
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "created_by")
+    private User createdBy;
+
 }

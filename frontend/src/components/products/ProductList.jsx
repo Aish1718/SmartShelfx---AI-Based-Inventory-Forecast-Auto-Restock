@@ -37,6 +37,55 @@ const ProductList = () => {
     }
   };
 
+  //   const fetchProducts = async () => {
+  //   try {
+  //     let response;
+
+  //     // Read user from AuthContext
+  //     const storedUser = JSON.parse(localStorage.getItem("user"));
+
+  //     const role = storedUser?.role || user?.role;
+
+  //     const isAdmin = role === "ADMIN" || role === "ROLE_ADMIN";
+  //     const isManager = role === "MANAGER" || role === "ROLE_MANAGER";
+
+  //     if (isManager) {
+  //       // ⭐ Manager sees only their own products
+  //       response = await productService.getProductsByManager(storedUser.id);
+  //     } else {
+  //       // Admin sees all
+  //       response = await productService.getAllProducts();
+  //     }
+
+  //     setProducts(response.data);
+  //   } catch (error) {
+  //     console.error("Error fetching products:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+
+//   const fetchProducts = async () => {
+//   try {
+//     let response;
+
+//     if (user.role === "MANAGER" || user.role === "ROLE_MANAGER") {
+//       response = await productService.getProductsByManager(user.id);
+//     } else {
+//       response = await productService.getAllProducts();
+//     }
+
+//     setProducts(response.data);
+//   } catch (error) {
+//     console.error("Error fetching products:", error);
+//   } finally {
+//     setLoading(false);
+//   }
+// };
+
+
+
   const fetchCategories = async () => {
     try {
       const response = await productService.getAllCategories();

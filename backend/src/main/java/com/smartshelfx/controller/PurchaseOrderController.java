@@ -19,6 +19,8 @@ import java.util.List;
 public class PurchaseOrderController {
 
     private final PurchaseOrderService poService;
+    private final PurchaseOrderService purchaseOrderService;
+
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
@@ -76,4 +78,10 @@ public class PurchaseOrderController {
     public ResponseEntity<List<PurchaseOrderDTO>> generateAutoRestockOrders() {
         return ResponseEntity.ok(poService.generateAutoRestockOrders());
     }
+
+    @GetMapping("/manager/{managerId}")
+    public ResponseEntity<List<PurchaseOrderDTO>> getOrdersByManager(@PathVariable Long managerId) {
+        return ResponseEntity.ok(purchaseOrderService.getPurchaseOrdersByManager(managerId));
+    }
+
 }
