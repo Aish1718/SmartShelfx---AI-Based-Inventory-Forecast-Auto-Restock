@@ -1022,6 +1022,10 @@ class DatabaseConnection:
             # Convert to DataFrame
             df = pd.DataFrame(results)
 
+            # ⭐⭐⭐ CRITICAL FIX — convert string to datetime
+            if not df.empty:
+                df["transaction_date"] = pd.to_datetime(df["transaction_date"])
+
             if len(df) > 0:
                 print(f"✅ Product {product_id}: Found {len(df)} days of transaction data")
                 print(f"   Total OUT: {df['quantity_out'].sum()}, Total IN: {df['quantity_in'].sum()}")

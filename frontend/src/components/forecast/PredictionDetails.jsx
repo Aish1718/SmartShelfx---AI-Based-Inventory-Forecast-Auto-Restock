@@ -1,3 +1,5 @@
+// frontend/src/components/forecast/PredictionDetails.jsx
+
 import React from "react";
 import {
   ChartBarIcon,

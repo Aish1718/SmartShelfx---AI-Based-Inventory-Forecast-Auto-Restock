@@ -38,6 +38,7 @@ const ViewUsers = () => {
             <th className="px-6 py-3 text-left">Email</th>
             <th className="px-6 py-3 text-left">Role</th>
             <th className="px-6 py-3 text-left">Active</th>
+            <th className="px-6 py-3 text-left">Delete</th>
           </tr>
         </thead>
 

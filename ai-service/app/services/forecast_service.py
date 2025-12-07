@@ -493,6 +493,15 @@ class ForecastService:
 
                 print(f"   Using fallback prediction: 7d={predicted_7}, Risk={risk_analysis['risk_level']}")
 
+                # ⭐ ADD this for Historical Summary in fallback mode
+                historical_summary = {
+                    "avg_daily_demand": float(historical_df["quantity_out"].mean()) if historical_df is not None and len(historical_df) > 0 else 0,
+                    "max_daily_demand": int(historical_df["quantity_out"].max()) if historical_df is not None and len(historical_df) > 0 else 0,
+                    "min_daily_demand": int(historical_df["quantity_out"].min()) if historical_df is not None and len(historical_df) > 0 else 0,
+                    "total_demand_90days": int(historical_df["quantity_out"].sum()) if historical_df is not None and len(historical_df) > 0 else 0
+                }
+
+
                 return {
                     "product_id": product_id,
                     "product_name": product_info["name"],
@@ -508,6 +517,7 @@ class ForecastService:
                         "next_14_days": predicted_14,
                         "next_30_days": predicted_30,
                     },
+                    "historical_summary": historical_summary,   # ⭐ Added
                     "risk_analysis": risk_analysis,
                     "method": "fallback"
                 }

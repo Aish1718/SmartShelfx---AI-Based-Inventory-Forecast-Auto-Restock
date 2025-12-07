@@ -14,19 +14,404 @@ const ProductForecastModal = ({ product, onClose }) => {
     fetchDetailedForecast();
   }, [product.productId]);
 
+  // const fetchDetailedForecast = async () => {
+  //   try {
+  //     const response = await forecastService.getForecastForProduct(
+  //       product.productId,
+  //       30
+  //     );
+  //     setForecast(response.data);
+  //   } catch (err) {
+  //     setError(err.response?.data?.error || 'Failed to load forecast');
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+//   const fetchDetailedForecast = async () => {
+//   try {
+//     setLoading(true);
+//     setError("");
+
+//     const response = await forecastService.getForecastForProduct(
+//       product.productId,
+//       30
+//     );
+
+//     const data = response.data || {};
+//     const preds = data.predictions || {};
+//     const risk = data.risk_analysis || {};
+
+//     const mapped = {
+//       productId: data.product_id ?? product.productId,
+//       productName: data.product_name ?? product.productName,
+//       productSku: data.product_sku ?? product.productSku,
+
+//       currentStock: data.currentStock ?? data.current_stock ?? 0,
+//       reorderLevel: data.reorderLevel ?? data.reorder_level ?? 0,
+
+//       confidenceScore:
+//         Number(data.confidence_score ?? data.confidenceScore ?? 0),
+
+//       predictions: {
+//         next7Days: preds.next_7_days ?? preds.next7Days ?? 0,
+//         next14Days: preds.next_14_days ?? preds.next14Days ?? 0,
+//         next30Days: preds.next_30_days ?? preds.next30Days ?? 0,
+
+//         dailyForecast: (preds.daily_forecast || []).map((d) => ({
+//           date: d.date,
+//           predictedDemand:
+//             d.predicted_demand ?? d.predictedDemand ?? 0,
+//         })),
+//       },
+
+//       riskAnalysis: {
+//         atRisk: risk.at_risk ?? false,
+//         riskLevel: risk.risk_level ?? "LOW",
+//         daysUntilStockout: risk.days_until_stockout ?? null,
+//         recommendedOrderQuantity:
+//           risk.recommended_order_quantity ?? 0,
+//       },
+
+//       historicalSummary: {
+//         avgDailyDemand:
+//           data.historical_summary?.avg_daily_demand ?? 0,
+//         maxDailyDemand:
+//           data.historical_summary?.max_daily_demand ?? 0,
+//         minDailyDemand:
+//           data.historical_summary?.min_daily_demand ?? 0,
+//         totalDemand90Days:
+//           data.historical_summary?.total_demand_90days ?? 0,
+//       },
+//     };
+
+//     setForecast(mapped);
+//   } catch (err) {
+//     console.error(err);
+//     setError(err.response?.data?.error || "Failed to load forecast");
+//   } finally {
+//     setLoading(false);
+//   }
+// };
+
+
+//   const fetchDetailedForecast = async () => {
+//   try {
+//     const response = await forecastService.getForecastForProduct(
+//       product.productId,
+//       30
+//     );
+
+//     const apiData = response.data;
+
+//     const preds = apiData.predictions || {};
+
+//     // ------------------------------
+//     // 🔥 FIX: Create daily forecast if missing
+//     // ------------------------------
+//     let daily = preds.daily_forecast || [];
+
+//     if (!daily || daily.length === 0) {
+//       const avg = Math.ceil((preds.next_30_days ?? 0) / 30);
+//       const today = new Date();
+
+//       daily = Array.from({ length: 30 }, (_, i) => ({
+//         date: new Date(today.getTime() + (i + 1) * 86400000).toISOString(),
+//         predictedDemand: avg
+//       }));
+//     }
+
+//     // ------------------------------
+//     // 🔥 Build frontend-safe forecast object
+//     // ------------------------------
+//     const mapped = {
+//       productName: apiData.product_name,
+//       productSku: apiData.product_sku,
+//       currentStock: apiData.currentStock,
+//       reorderLevel: apiData.reorderLevel,
+//       confidenceScore:
+//         apiData.confidence_score ??
+//         apiData.predictions?.confidence_score ??
+//         apiData.predictions?.confidence ??
+//         apiData.confidence ??
+//         null,
+
+//       predictions: {
+//         next7Days: preds.next_7_days ?? 0,
+//         next14Days: preds.next_14_days ?? 0,
+//         next30Days: preds.next_30_days ?? 0,
+//         dailyForecast: daily
+//       },
+
+//       riskAnalysis: apiData.risk_analysis || {
+//         atRisk: false,
+//         riskLevel: "LOW",
+//         daysUntilStockout: null,
+//         recommendedOrderQuantity: 0
+//       },
+
+//       historicalSummary: apiData.historical_summary || {
+//         avgDailyDemand: 0,
+//         maxDailyDemand: 0,
+//         minDailyDemand: 0,
+//         totalDemand90Days: 0
+//       }
+//     };
+
+//     setForecast(mapped);
+//   } catch (err) {
+//     setError(err.response?.data?.error || "Failed to load forecast");
+//   } finally {
+//     setLoading(false);
+//   }
+// };
+
+
+  //   const fetchDetailedForecast = async () => {
+  //   setLoading(true);
+  //   setError("");
+
+  //   try {
+  //     const response = await forecastService.getForecastForProduct(
+  //       product.productId,
+  //       30
+  //     );
+
+  //     const data = response.data;
+  //     console.log("🔍 Raw forecast from AI service:", data);
+
+  //     // ⭐ Normalize snake_case -> camelCase for the modal
+  //     const normalizedForecast = {
+  //       productName: data.product_name || data.productName || product.productName,
+  //       productSku: data.product_sku || data.productSku || product.productSku,
+
+  //       currentStock:
+  //         data.currentStock ??
+  //         data.current_stock ??
+  //         product.currentStock,
+
+  //       reorderLevel:
+  //         data.reorderLevel ??
+  //         data.reorder_level ??
+  //         product.reorderLevel,
+
+  //       // CONFIDENCE (0.5 -> 50%)
+  //       confidenceScore:
+  //         data.confidence_score != null
+  //           ? Number(data.confidence_score)
+  //           : data.confidenceScore != null
+  //           ? Number(data.confidenceScore)
+  //           : 0,
+
+  //       predictions: {
+  //         next7Days:
+  //           data.predictions?.next_7_days ??
+  //           data.predictions?.next7Days ??
+  //           0,
+  //         next14Days:
+  //           data.predictions?.next_14_days ??
+  //           data.predictions?.next14Days ??
+  //           0,
+  //         next30Days:
+  //           data.predictions?.next_30_days ??
+  //           data.predictions?.next30Days ??
+  //           0,
+
+  //         // 30-day daily forecast for the chart
+  //         dailyForecast:
+  //           data.predictions?.daily_forecast?.map((d) => ({
+  //             date: d.date,
+  //             predictedDemand:
+  //               d.predicted_demand ??
+  //               d.predictedDemand ??
+  //               0,
+  //           })) || [],
+  //       },
+
+  //       riskAnalysis: {
+  //         atRisk:
+  //           data.risk_analysis?.at_risk ??
+  //           data.riskAnalysis?.atRisk ??
+  //           false,
+  //         riskLevel:
+  //           data.risk_analysis?.risk_level ??
+  //           data.riskAnalysis?.riskLevel ??
+  //           "LOW",
+  //         daysUntilStockout:
+  //           data.risk_analysis?.days_until_stockout ??
+  //           data.riskAnalysis?.daysUntilStockout ??
+  //           null,
+  //         recommendedOrderQuantity:
+  //           data.risk_analysis?.recommended_order_quantity ??
+  //           data.riskAnalysis?.recommendedOrderQuantity ??
+  //           0,
+  //       },
+
+  //       historicalSummary: {
+  //         avgDailyDemand:
+  //           data.historical_summary?.avg_daily_demand ??
+  //           data.historicalSummary?.avgDailyDemand ??
+  //           0,
+  //         maxDailyDemand:
+  //           data.historical_summary?.max_daily_demand ??
+  //           data.historicalSummary?.maxDailyDemand ??
+  //           0,
+  //         minDailyDemand:
+  //           data.historical_summary?.min_daily_demand ??
+  //           data.historicalSummary?.minDailyDemand ??
+  //           0,
+  //         totalDemand90Days:
+  //           data.historical_summary?.total_demand_90days ??
+  //           data.historicalSummary?.totalDemand90Days ??
+  //           0,
+  //       },
+  //     };
+
+  //     console.log("✅ Normalized forecast for modal:", normalizedForecast);
+  //     setForecast(normalizedForecast);
+  //   } catch (err) {
+  //     console.error("❌ Error loading detailed forecast:", err);
+  //     setError(err.response?.data?.error || "Failed to load forecast");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const fetchDetailedForecast = async () => {
-    try {
-      const response = await forecastService.getForecastForProduct(
-        product.productId,
-        30
+  setLoading(true);
+  setError("");
+
+  try {
+    const response = await forecastService.getForecastForProduct(
+      product.productId,
+      30
+    );
+
+    const data = response.data;
+    console.log("🔍 Raw forecast from AI service:", data);
+
+    // ⭐ Normalize snake_case -> camelCase for the modal
+    const normalizedForecast = {
+      productName: data.product_name || data.productName || product.productName,
+      productSku: data.product_sku || data.productSku || product.productSku,
+
+      currentStock:
+        data.currentStock ??
+        data.current_stock ??
+        product.currentStock,
+
+      reorderLevel:
+        data.reorderLevel ??
+        data.reorder_level ??
+        product.reorderLevel,
+
+      // CONFIDENCE (0.5 -> 50%)
+      confidenceScore:
+        data.confidence_score != null
+          ? Number(data.confidence_score)
+          : data.confidenceScore != null
+          ? Number(data.confidenceScore)
+          : 0,
+
+      predictions: {
+        next7Days:
+          data.predictions?.next_7_days ??
+          data.predictions?.next7Days ??
+          0,
+        next14Days:
+          data.predictions?.next_14_days ??
+          data.predictions?.next14Days ??
+          0,
+        next30Days:
+          data.predictions?.next_30_days ??
+          data.predictions?.next30Days ??
+          0,
+
+        // Raw daily forecast from backend (may be empty)
+        dailyForecast:
+          data.predictions?.daily_forecast?.map((d) => ({
+            date: d.date,
+            predictedDemand:
+              d.predicted_demand ??
+              d.predictedDemand ??
+              0,
+          })) || [],
+      },
+
+      riskAnalysis: {
+        atRisk:
+          data.risk_analysis?.at_risk ??
+          data.riskAnalysis?.atRisk ??
+          false,
+        riskLevel:
+          data.risk_analysis?.risk_level ??
+          data.riskAnalysis?.riskLevel ??
+          "LOW",
+        daysUntilStockout:
+          data.risk_analysis?.days_until_stockout ??
+          data.riskAnalysis?.daysUntilStockout ??
+          null,
+        recommendedOrderQuantity:
+          data.risk_analysis?.recommended_order_quantity ??
+          data.riskAnalysis?.recommendedOrderQuantity ??
+          0,
+      },
+
+      historicalSummary: {
+        avgDailyDemand:
+          data.historical_summary?.avg_daily_demand ??
+          data.historicalSummary?.avgDailyDemand ??
+          0,
+        maxDailyDemand:
+          data.historical_summary?.max_daily_demand ??
+          data.historicalSummary?.maxDailyDemand ??
+          0,
+        minDailyDemand:
+          data.historical_summary?.min_daily_demand ??
+          data.historicalSummary?.minDailyDemand ??
+          0,
+        totalDemand90Days:
+          data.historical_summary?.total_demand_90days ??
+          data.historicalSummary?.totalDemand90Days ??
+          0,
+      },
+    };
+
+    // ----------------------------------------
+    // ⭐ FIX: If no daily forecast → generate simple 30-day forecast
+    // ----------------------------------------
+    if (
+      !normalizedForecast.predictions.dailyForecast ||
+      normalizedForecast.predictions.dailyForecast.length === 0
+    ) {
+      console.warn("⚠️ No daily forecast received. Generating fallback 30-day chart data.");
+
+      const avgDaily = Math.round(
+        normalizedForecast.predictions.next30Days / 30
       );
-      setForecast(response.data);
-    } catch (err) {
-      setError(err.response?.data?.error || 'Failed to load forecast');
-    } finally {
-      setLoading(false);
+
+      normalizedForecast.predictions.dailyForecast = Array.from(
+        { length: 30 },
+        (_, i) => ({
+          date: new Date(Date.now() + i * 86400000).toISOString(),
+          predictedDemand: avgDaily,
+        })
+      );
     }
-  };
+
+    console.log("✅ Normalized forecast for modal:", normalizedForecast);
+    setForecast(normalizedForecast);
+  } catch (err) {
+    console.error("❌ Error loading detailed forecast:", err);
+    setError(err.response?.data?.error || "Failed to load forecast");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
+
 
   if (loading) {
     return (
@@ -185,13 +570,13 @@ const ProductForecastModal = ({ product, onClose }) => {
             </div>
 
             {/* Forecast Chart */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
+            {/* <div className="bg-white rounded-lg border border-gray-200 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
                 <Calendar className="w-5 h-5 text-gray-600" />
                 <span>30-Day Forecast</span>
               </h3>
               <ForecastChart data={forecast.predictions.dailyForecast} />
-            </div>
+            </div> */}
 
             {/* Historical Summary */}
             <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
