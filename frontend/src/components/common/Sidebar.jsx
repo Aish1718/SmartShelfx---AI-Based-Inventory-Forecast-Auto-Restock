@@ -59,7 +59,7 @@
 
 
 
-
+// path: frontend/src/components/common/Sidebar.jsx
 
 import React, { useContext } from 'react';
 import { NavLink } from 'react-router-dom';
@@ -82,7 +82,9 @@ const Sidebar = () => {
 
   if (!user) return null;
 
-  const role = user.role;
+  // const role = user.role;
+  const rawRole = user.role;
+  const role = rawRole?.startsWith('ROLE_') ? rawRole.slice(5) : rawRole;
 
   // ============================
   // ROLE-BASED SIDEBAR ITEMS
@@ -101,7 +103,7 @@ const Sidebar = () => {
       { path: '/forecast', icon: TrendingUp, label: 'Forecast' },
       { path: '/purchase-orders', icon: ShoppingCart, label: 'Purchase Orders' },
       { path: '/alerts', icon: Bell, label: 'Alerts' },
-      { path: '/analytics', icon: BarChart3, label: 'Analytics' },
+      // { path: '/analytics', icon: BarChart3, label: 'Analytics' },
     ];
   }
 
@@ -127,20 +129,31 @@ const Sidebar = () => {
   // ----------------------------
   // VENDOR MENU
   // ----------------------------
+  // if (role === "VENDOR") {
+  //   menuItems = [
+  //     {
+  //       path: '/vendor/dashboard',
+  //       icon: LayoutDashboard,
+  //       label: 'Dashboard'
+  //     },
+  //     {
+  //       path: '/vendor/orders',
+  //       icon: ShoppingCart,
+  //       label: 'My Orders'
+  //     }
+  //   ];
+  // }
+
   if (role === "VENDOR") {
-    menuItems = [
-      {
-        path: '/vendor/dashboard',
-        icon: LayoutDashboard,
-        label: 'Dashboard'
-      },
-      {
-        path: '/vendor/orders',
-        icon: ShoppingCart,
-        label: 'My Orders'
-      }
-    ];
-  }
+  menuItems = [
+    {
+      path: '/vendor/orders',
+      icon: ShoppingCart,
+      label: 'My Orders'
+    }
+  ];
+}
+
 
   return (
     <div className="w-64 bg-gray-900 text-white h-screen fixed left-0 top-0 pt-20">

@@ -274,7 +274,7 @@ function App() {
           <Route path="/register" element={<Register />} />
 
           {/* ADMIN / MANAGER PROTECTED ROUTES */}
-          <Route
+          {/* <Route
             path="/dashboard"
             element={
               <ProtectedRoute>
@@ -283,7 +283,19 @@ function App() {
                 </Layout>
               </ProtectedRoute>
             }
-          />
+          /> */}
+
+          <Route
+  path="/dashboard"
+  element={
+    <ProtectedRoute roles={["ADMIN", "MANAGER"]}>
+      <Layout>
+        <AnalyticsDashboard />
+      </Layout>
+    </ProtectedRoute>
+  }
+/>
+
 
           <Route
             path="/products"
@@ -378,7 +390,7 @@ function App() {
             element={
               <ProtectedRoute roles={["VENDOR"]}>
                 <Layout>
-                  <VendorDashboard />
+                  <PurchaseOrderList />
                 </Layout>
               </ProtectedRoute>
             }
@@ -387,7 +399,7 @@ function App() {
           <Route
             path="/vendor/orders"
             element={
-              <ProtectedRoute roles={["VENDOR"]}>
+              <ProtectedRoute roles={["VENDOR","ROLE_VENDOR"]}>
                 <Layout>
                   <PurchaseOrderList />
                 </Layout>

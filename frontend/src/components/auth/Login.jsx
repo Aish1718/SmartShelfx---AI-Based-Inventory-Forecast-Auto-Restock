@@ -17,8 +17,29 @@ const Login = () => {
     setLoading(true);
 
     try {
-      await login(email, password);
-      navigate('/dashboard');
+  //     await login(email, password);
+  //     // navigate('/analytics');
+  //     const role = JSON.parse(localStorage.getItem("user"))?.role;
+  //     if (role === "VENDOR") {
+  //       navigate('/vendor/orders');
+  //     } else {
+  //       navigate('/dashboard');
+  // }
+
+        await login(email, password);
+
+        // 🔥 Read and normalize role from localStorage
+        const storedUser = JSON.parse(localStorage.getItem("user"));
+        const rawRole = storedUser?.role;
+        const role = rawRole?.startsWith('ROLE_') ? rawRole.slice(5) : rawRole;
+
+        if (role === "VENDOR") {
+          navigate('/vendor/orders');
+        } else {
+          navigate('/dashboard');
+        }
+
+
     } catch (err) {
       // Handle different error formats
       const errorMessage = err.message ||
