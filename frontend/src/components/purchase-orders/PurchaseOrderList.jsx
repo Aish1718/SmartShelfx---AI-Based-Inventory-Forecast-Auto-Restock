@@ -238,89 +238,118 @@
 
 // frontend/src/components/purchase-orders/PurchaseOrderList.jsx
 
-import React, { useState, useEffect, useContext } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  ShoppingCart,
-  Plus,
-  Filter,
-  RefreshCw,
-  Sparkles,
-  Package
-} from "lucide-react";
-import { purchaseOrderService } from "../../services/purchaseOrderService";
-import { AuthContext } from "../../context/AuthContext";
-import PurchaseOrderTable from "./PurchaseOrderTable";
-import PurchaseOrderForm from "./PurchaseOrderForm";
-import RestockRecommendation from "./RestockRecommendation";
+// import React, { useState, useEffect, useContext } from "react";
+// import { useNavigate } from "react-router-dom";
+// import {
+//   ShoppingCart,
+//   Plus,
+//   Filter,
+//   RefreshCw,
+//   Sparkles,
+//   Package
+// } from "lucide-react";
+// import { purchaseOrderService } from "../../services/purchaseOrderService";
+// import { AuthContext } from "../../context/AuthContext";
+// import PurchaseOrderTable from "./PurchaseOrderTable";
+// import PurchaseOrderForm from "./PurchaseOrderForm";
+// import RestockRecommendation from "./RestockRecommendation";
 
-const PurchaseOrderList = () => {
-  const { user } = useContext(AuthContext);
+// const PurchaseOrderList = () => {
+//   const { user } = useContext(AuthContext);
 
-  // 🔥 Correct Role Normalization (this was your issue)
-  const isAdmin =
-    user.role === "ADMIN" || user.role === "ROLE_ADMIN";
-  const isManager =
-    user.role === "MANAGER" || user.role === "ROLE_MANAGER";
-  const isVendor =
-    user.role === "VENDOR" || user.role === "ROLE_VENDOR";
+//   // 🔥 Correct Role Normalization (this was your issue)
+//   const isAdmin =
+//     user.role === "ADMIN" || user.role === "ROLE_ADMIN";
+//   const isManager =
+//     user.role === "MANAGER" || user.role === "ROLE_MANAGER";
+//   const isVendor =
+//     user.role === "VENDOR" || user.role === "ROLE_VENDOR";
 
-  const [orders, setOrders] = useState([]);
-  const [filteredOrders, setFilteredOrders] = useState([]);
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [showForm, setShowForm] = useState(false);
-  const [showRecommendations, setShowRecommendations] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+//   const [orders, setOrders] = useState([]);
+//   const [filteredOrders, setFilteredOrders] = useState([]);
+//   const [statusFilter, setStatusFilter] = useState("all");
+//   const [showForm, setShowForm] = useState(false);
+//   const [showRecommendations, setShowRecommendations] = useState(false);
+//   const [loading, setLoading] = useState(true);
+//   const [refreshing, setRefreshing] = useState(false);
 
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
+//   useEffect(() => {
+//     fetchOrders();
+//   }, []);
 
-  useEffect(() => {
-    filterOrders();
-  }, [statusFilter, orders]);
+//   useEffect(() => {
+//     filterOrders();
+//   }, [statusFilter, orders]);
 
-  // const fetchOrders = async () => {
-  //   try {
-  //     let response;
+//   // const fetchOrders = async () => {
+//   //   try {
+//   //     let response;
 
-  //     if (isVendor) {
-  //       response = await purchaseOrderService.getPurchaseOrdersByVendor(user.id);
-  //     }
-  //     else if (isManager) {
-  //     response = await purchaseOrderService.getPurchaseOrdersByManager(user.id);
-  //     }
-  //     else {
-  //       response = await purchaseOrderService.getAllPurchaseOrders();
-  //     }
+//   //     if (isVendor) {
+//   //       response = await purchaseOrderService.getPurchaseOrdersByVendor(user.id);
+//   //     }
+//   //     else if (isManager) {
+//   //     response = await purchaseOrderService.getPurchaseOrdersByManager(user.id);
+//   //     }
+//   //     else {
+//   //       response = await purchaseOrderService.getAllPurchaseOrders();
+//   //     }
 
-  //     setOrders(response.data);
-  //   } catch (error) {
-  //     console.error("Error fetching orders:", error);
-  //   } finally {
-  //     setLoading(false);
-  //     setRefreshing(false);
-  //   }
-  // };
+//   //     setOrders(response.data);
+//   //   } catch (error) {
+//   //     console.error("Error fetching orders:", error);
+//   //   } finally {
+//   //     setLoading(false);
+//   //     setRefreshing(false);
+//   //   }
+//   // };
+
+
+// //   const fetchOrders = async () => {
+// //   try {
+// //     let response;
+
+// //     if (isVendor) {
+// //       response = await purchaseOrderService.getPurchaseOrdersByVendor(user.id);
+// //     }
+// //     else if (isManager) {
+// //       response = await purchaseOrderService.getPurchaseOrdersByManager(user.id);
+// //     }
+// //     else {
+// //       response = await purchaseOrderService.getAllPurchaseOrders();
+// //     }
+
+// //     setOrders(response.data);
+// //   } catch (error) {
+// //     console.error("Error fetching orders:", error);
+// //   } finally {
+// //     setLoading(false);
+// //     setRefreshing(false);
+// //   }
+// // };
 
 
 //   const fetchOrders = async () => {
 //   try {
 //     let response;
 
+//     // Get ID from localStorage (because AuthContext doesn't have it)
+//     const storedUser = JSON.parse(localStorage.getItem("user"));
+//     const userId = storedUser?.id;
+
 //     if (isVendor) {
-//       response = await purchaseOrderService.getPurchaseOrdersByVendor(user.id);
+//       response = await purchaseOrderService.getPurchaseOrdersByVendor(userId);
 //     }
 //     else if (isManager) {
-//       response = await purchaseOrderService.getPurchaseOrdersByManager(user.id);
+//       response = await purchaseOrderService.getPurchaseOrdersByManager(userId);
 //     }
 //     else {
 //       response = await purchaseOrderService.getAllPurchaseOrders();
 //     }
 
 //     setOrders(response.data);
+
 //   } catch (error) {
 //     console.error("Error fetching orders:", error);
 //   } finally {
@@ -330,34 +359,218 @@ const PurchaseOrderList = () => {
 // };
 
 
+//   const filterOrders = () => {
+//     if (statusFilter === "all") {
+//       setFilteredOrders(orders);
+//     } else {
+//       setFilteredOrders(orders.filter((o) => o.status === statusFilter));
+//     }
+//   };
+
+//   const handleRefresh = () => {
+//     setRefreshing(true);
+//     fetchOrders();
+//   };
+
+//   const handleFormSubmit = () => {
+//     setShowForm(false);
+//     fetchOrders();
+//   };
+
+//   const statusCounts = {
+//     PENDING: orders.filter((o) => o.status === "PENDING").length,
+//     APPROVED: orders.filter((o) => o.status === "APPROVED").length,
+//     DISPATCHED: orders.filter((o) => o.status === "DISPATCHED").length,
+//     DELIVERED: orders.filter((o) => o.status === "DELIVERED").length
+//   };
+
+//   if (loading) {
+//     return (
+//       <div className="flex items-center justify-center h-screen">
+//         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className="p-6">
+//       {/* Header */}
+//       <div className="flex justify-between items-center mb-6">
+//         <div>
+//           <h1 className="text-3xl font-bold text-gray-900 flex items-center space-x-3">
+//             <ShoppingCart className="w-8 h-8 text-indigo-600" />
+//             <span>Purchase Orders</span>
+//           </h1>
+//           <p className="text-gray-600 mt-1">Manage procurement and restocking</p>
+//         </div>
+
+//         <div className="flex space-x-3">
+//           {/* 🔥 Admin + Manager Only (Vendor should NOT see this) */}
+//           {(isAdmin || isManager) && (
+//             <>
+//               <button
+//                 onClick={() => setShowRecommendations(true)}
+//                 className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition"
+//               >
+//                 <Sparkles className="w-5 h-5" />
+//                 <span>AI Recommendations</span>
+//               </button>
+
+//               <button
+//                 onClick={() => setShowForm(true)}
+//                 className="flex items-center space-x-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
+//               >
+//                 <Plus className="w-5 h-5" />
+//                 <span>Create Order</span>
+//               </button>
+//             </>
+//           )}
+
+//           <button
+//             onClick={handleRefresh}
+//             disabled={refreshing}
+//             className="flex items-center space-x-2 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition disabled:opacity-50"
+//           >
+//             <RefreshCw className={`w-5 h-5 ${refreshing ? "animate-spin" : ""}`} />
+//             <span>Refresh</span>
+//           </button>
+//         </div>
+//       </div>
+
+//       {/* Summary Cards — hide for Manager ONLY */}
+//       {!isManager && (
+//         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+//           <div className="bg-white p-4 rounded-lg shadow-sm">
+//             <p className="text-sm text-gray-600">Pending</p>
+//             <p className="text-2xl font-bold text-yellow-600">{statusCounts.PENDING}</p>
+//           </div>
+
+//           <div className="bg-white p-4 rounded-lg shadow-sm">
+//             <p className="text-sm text-gray-600">Approved</p>
+//             <p className="text-2xl font-bold text-blue-600">{statusCounts.APPROVED}</p>
+//           </div>
+
+//           <div className="bg-white p-4 rounded-lg shadow-sm">
+//             <p className="text-sm text-gray-600">In Transit</p>
+//             <p className="text-2xl font-bold text-purple-600">{statusCounts.DISPATCHED}</p>
+//           </div>
+
+//           <div className="bg-white p-4 rounded-lg shadow-sm">
+//             <p className="text-sm text-gray-600">Delivered</p>
+//             <p className="text-2xl font-bold text-green-600">{statusCounts.DELIVERED}</p>
+//           </div>
+//         </div>
+//       )}
+
+//       {/* Filters */}
+//       <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+//         <div className="flex items-center space-x-4">
+//           <Filter className="w-5 h-5 text-gray-400" />
+//           <select
+//             value={statusFilter}
+//             onChange={(e) => setStatusFilter(e.target.value)}
+//             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+//           >
+//             <option value="all">All Orders ({orders.length})</option>
+//             <option value="PENDING">Pending ({statusCounts.PENDING})</option>
+//             <option value="APPROVED">Approved ({statusCounts.APPROVED})</option>
+//             <option value="DISPATCHED">In Transit ({statusCounts.DISPATCHED})</option>
+//             <option value="DELIVERED">Delivered ({statusCounts.DELIVERED})</option>
+//             <option value="CANCELLED">Cancelled</option>
+//           </select>
+//         </div>
+//       </div>
+
+//       {/* Orders Table */}
+//       <PurchaseOrderTable
+//         orders={filteredOrders}
+//         onRefresh={fetchOrders}
+//         loading={loading}
+//       />
+
+//       {/* Modals */}
+//       {showForm && (
+//         <PurchaseOrderForm onClose={() => setShowForm(false)} onSubmit={handleFormSubmit} />
+//       )}
+
+//       {showRecommendations && (
+//         <RestockRecommendation
+//           onClose={() => setShowRecommendations(false)}
+//           onOrdersCreated={fetchOrders}
+//         />
+//       )}
+//     </div>
+//   );
+// };
+
+// export default PurchaseOrderList;
+
+
+
+// frontend/src/components/purchase-orders/PurchaseOrderList.jsx
+
+import React, { useState, useEffect, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  ShoppingCart,
+  Plus,
+  Filter,
+  RefreshCw,
+  Sparkles
+} from "lucide-react";
+
+import { purchaseOrderService } from "../../services/purchaseOrderService";
+import { AuthContext } from "../../context/AuthContext";
+import PurchaseOrderTable from "./PurchaseOrderTable";
+import PurchaseOrderForm from "./PurchaseOrderForm";
+import RestockRecommendation from "./RestockRecommendation";
+
+const PurchaseOrderList = () => {
+  const { user } = useContext(AuthContext);
+
+  const isAdmin = user.role === "ADMIN" || user.role === "ROLE_ADMIN";
+  const isManager = user.role === "MANAGER" || user.role === "ROLE_MANAGER";
+  const isVendor = user.role === "VENDOR" || user.role === "ROLE_VENDOR";
+
+  const [orders, setOrders] = useState([]);
+  const [filteredOrders, setFilteredOrders] = useState([]);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [showForm, setShowForm] = useState(false);
+  const [showRecommendations, setShowRecommendations] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  useEffect(() => {
+    filterOrders();
+  }, [statusFilter, orders]);
+
   const fetchOrders = async () => {
-  try {
-    let response;
+    try {
+      let response;
 
-    // Get ID from localStorage (because AuthContext doesn't have it)
-    const storedUser = JSON.parse(localStorage.getItem("user"));
-    const userId = storedUser?.id;
+      const storedUser = JSON.parse(localStorage.getItem("user"));
+      const userId = storedUser?.id;
 
-    if (isVendor) {
-      response = await purchaseOrderService.getPurchaseOrdersByVendor(userId);
+      if (isVendor) {
+        response = await purchaseOrderService.getPurchaseOrdersByVendor(userId);
+      } else if (isManager) {
+        response = await purchaseOrderService.getPurchaseOrdersByManager(userId);
+      } else {
+        response = await purchaseOrderService.getAllPurchaseOrders();
+      }
+
+      setOrders(response.data);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
     }
-    else if (isManager) {
-      response = await purchaseOrderService.getPurchaseOrdersByManager(userId);
-    }
-    else {
-      response = await purchaseOrderService.getAllPurchaseOrders();
-    }
-
-    setOrders(response.data);
-
-  } catch (error) {
-    console.error("Error fetching orders:", error);
-  } finally {
-    setLoading(false);
-    setRefreshing(false);
-  }
-};
-
+  };
 
   const filterOrders = () => {
     if (statusFilter === "all") {
@@ -386,31 +599,32 @@ const PurchaseOrderList = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      <div className="flex items-center justify-center h-screen bg-[#0D1322]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      {/* Header */}
+    <div className="p-6 text-[#D2C1B6] bg-[#0D1322] min-h-screen">
+      {/* HEADER */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center space-x-3">
-            <ShoppingCart className="w-8 h-8 text-indigo-600" />
+          <h1 className="text-3xl font-bold flex items-center space-x-3 text-white">
+            <ShoppingCart className="w-8 h-8 text-blue-500" />
             <span>Purchase Orders</span>
           </h1>
-          <p className="text-gray-600 mt-1">Manage procurement and restocking</p>
+          <p className="text-gray-400 mt-1">
+            Manage procurement and restocking
+          </p>
         </div>
 
         <div className="flex space-x-3">
-          {/* 🔥 Admin + Manager Only (Vendor should NOT see this) */}
           {(isAdmin || isManager) && (
             <>
               <button
                 onClick={() => setShowRecommendations(true)}
-                className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition"
+                className="flex items-center space-x-2 bg-purple-700/60 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition"
               >
                 <Sparkles className="w-5 h-5" />
                 <span>AI Recommendations</span>
@@ -418,7 +632,7 @@ const PurchaseOrderList = () => {
 
               <button
                 onClick={() => setShowForm(true)}
-                className="flex items-center space-x-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
+                className="flex items-center space-x-2 bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700 transition text-white"
               >
                 <Plus className="w-5 h-5" />
                 <span>Create Order</span>
@@ -429,47 +643,57 @@ const PurchaseOrderList = () => {
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="flex items-center space-x-2 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition disabled:opacity-50"
+            className="flex items-center space-x-2 bg-[#1A2234] text-white px-4 py-2 rounded-lg hover:bg-[#222B3F] transition border border-[#2A3248] disabled:opacity-50"
           >
-            <RefreshCw className={`w-5 h-5 ${refreshing ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`w-5 h-5 ${refreshing ? "animate-spin" : ""}`}
+            />
             <span>Refresh</span>
           </button>
         </div>
       </div>
 
-      {/* Summary Cards — hide for Manager ONLY */}
+      {/* SUMMARY CARDS (Hidden for Manager) */}
       {!isManager && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white p-4 rounded-lg shadow-sm">
-            <p className="text-sm text-gray-600">Pending</p>
-            <p className="text-2xl font-bold text-yellow-600">{statusCounts.PENDING}</p>
+          <div className="bg-[#1A2234] p-4 rounded-lg border border-[#2A3248]">
+            <p className="text-sm text-gray-400">Pending</p>
+            <p className="text-2xl font-bold text-yellow-400">
+              {statusCounts.PENDING}
+            </p>
           </div>
 
-          <div className="bg-white p-4 rounded-lg shadow-sm">
-            <p className="text-sm text-gray-600">Approved</p>
-            <p className="text-2xl font-bold text-blue-600">{statusCounts.APPROVED}</p>
+          <div className="bg-[#1A2234] p-4 rounded-lg border border-[#2A3248]">
+            <p className="text-sm text-gray-400">Approved</p>
+            <p className="text-2xl font-bold text-blue-400">
+              {statusCounts.APPROVED}
+            </p>
           </div>
 
-          <div className="bg-white p-4 rounded-lg shadow-sm">
-            <p className="text-sm text-gray-600">In Transit</p>
-            <p className="text-2xl font-bold text-purple-600">{statusCounts.DISPATCHED}</p>
+          <div className="bg-[#1A2234] p-4 rounded-lg border border-[#2A3248]">
+            <p className="text-sm text-gray-400">In Transit</p>
+            <p className="text-2xl font-bold text-purple-400">
+              {statusCounts.DISPATCHED}
+            </p>
           </div>
 
-          <div className="bg-white p-4 rounded-lg shadow-sm">
-            <p className="text-sm text-gray-600">Delivered</p>
-            <p className="text-2xl font-bold text-green-600">{statusCounts.DELIVERED}</p>
+          <div className="bg-[#1A2234] p-4 rounded-lg border border-[#2A3248]">
+            <p className="text-sm text-gray-400">Delivered</p>
+            <p className="text-2xl font-bold text-green-400">
+              {statusCounts.DELIVERED}
+            </p>
           </div>
         </div>
       )}
 
-      {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+      {/* FILTERS */}
+      <div className="bg-[#1A2234] rounded-lg border border-[#2A3248] p-4 mb-6">
         <div className="flex items-center space-x-4">
           <Filter className="w-5 h-5 text-gray-400" />
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+            className="flex-1 px-4 py-2 bg-[#0D1322] border border-[#2A3248] rounded-lg text-white focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">All Orders ({orders.length})</option>
             <option value="PENDING">Pending ({statusCounts.PENDING})</option>
@@ -481,16 +705,19 @@ const PurchaseOrderList = () => {
         </div>
       </div>
 
-      {/* Orders Table */}
+      {/* TABLE */}
       <PurchaseOrderTable
         orders={filteredOrders}
         onRefresh={fetchOrders}
         loading={loading}
       />
 
-      {/* Modals */}
+      {/* MODALS */}
       {showForm && (
-        <PurchaseOrderForm onClose={() => setShowForm(false)} onSubmit={handleFormSubmit} />
+        <PurchaseOrderForm
+          onClose={() => setShowForm(false)}
+          onSubmit={handleFormSubmit}
+        />
       )}
 
       {showRecommendations && (

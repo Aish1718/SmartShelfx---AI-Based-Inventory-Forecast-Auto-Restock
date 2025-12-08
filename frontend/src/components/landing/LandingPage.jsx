@@ -111,7 +111,7 @@ export default function LandingPage() {
 
         <div className="max-w-5xl mx-auto p-8 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-xl">
           <img
-            src="https://images.unsplash.com/photo-1655722291834-e0a43d0b2de2"
+            src="https://lpsonline.sas.upenn.edu/sites/default/files/2022-10/plpso-feratures-data-business.jpg"
             alt="Analytics"
             className="rounded-xl shadow-lg"
           />

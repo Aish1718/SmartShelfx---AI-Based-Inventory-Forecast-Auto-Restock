@@ -230,7 +230,7 @@ import "./index.css";
 
 // Main admin layout
 const Layout = ({ children }) => (
-  <div className="min-h-screen bg-gray-50">
+  <div className="min-h-screen bg-[#0b1220] text-[var(--text)]">
     <Navbar />
     <Sidebar />
     <div className="ml-64 pt-20">{children}</div>

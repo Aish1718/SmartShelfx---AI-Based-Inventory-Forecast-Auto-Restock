@@ -1,4 +1,4 @@
-// src/components/vendor/dashboard/VendorCharts.jsx
+//src/components/vendor/dashboard/VendorCharts.jsx
 import React, { useMemo } from 'react';
 
 const simpleBarHeight = (value, max) => {

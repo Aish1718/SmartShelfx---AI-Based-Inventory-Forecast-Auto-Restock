@@ -82,14 +82,14 @@ const AlertList = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 bg-[#0A0F1A] min-h-screen text-gray-200" style={{ backgroundColor: "#1F2A38" }}>
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center space-x-3">
-            <Bell className="w-8 h-8 text-indigo-600" />
+          <h1 className="text-3xl font-bold flex items-center space-x-3" style={{ color: "#D2C1B6" }}>
+            <Bell className="w-8 h-8" style={{ color: "#D2C1B6" }}/>
             <span>Alerts & Notifications</span>
           </h1>
-          <p className="text-gray-600 mt-1">Manage system alerts and warnings</p>
+          <p className="mt-1" style={{ color: "#D2C1B6" }}>Manage system alerts and warnings</p>
         </div>
         <button
           onClick={handleDismissAll}
@@ -112,9 +112,9 @@ const AlertList = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+      <div className="bg-[#0D1322] border border-white/10 rounded-lg shadow-md p-4 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <select
+          {/* <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
             className="px-4 py-2 border border-gray-300 rounded-lg"
@@ -123,9 +123,9 @@ const AlertList = () => {
             <option value="LOW_STOCK">Low Stock</option>
             <option value="OUT_OF_STOCK">Out of Stock</option>
             <option value="FORECAST">Forecast</option>
-          </select>
+          </select> */}
 
-          <select
+          {/* <select
             value={severityFilter}
             onChange={(e) => setSeverityFilter(e.target.value)}
             className="px-4 py-2 border border-gray-300 rounded-lg"
@@ -135,9 +135,9 @@ const AlertList = () => {
             <option value="HIGH">High</option>
             <option value="MEDIUM">Medium</option>
             <option value="LOW">Low</option>
-          </select>
+          </select> */}
 
-          <label className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg">
+          {/* <label className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg">
             <input
               type="checkbox"
               checked={showDismissed}
@@ -145,7 +145,57 @@ const AlertList = () => {
               className="w-4 h-4"
             />
             <span>Show Dismissed</span>
-          </label>
+          </label> */}
+
+        <select
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value)}
+          className="px-4 py-2 rounded-lg text-gray-200"
+          style={{
+            backgroundColor: "#0D1322",
+            border: "1px solid #1A2234",
+          }}
+      >
+        <option value="all">All Types</option>
+        <option value="LOW_STOCK">Low Stock</option>
+        <option value="OUT_OF_STOCK">Out of Stock</option>
+        <option value="FORECAST">Forecast</option>
+      </select>
+
+      <select
+        value={severityFilter}
+        onChange={(e) => setSeverityFilter(e.target.value)}
+        className="px-4 py-2 rounded-lg text-gray-200"
+        style={{
+          backgroundColor: "#0D1322",
+          border: "1px solid #1A2234",
+        }}
+      >
+        <option value="all">All Severities</option>
+        <option value="CRITICAL">Critical</option>
+        <option value="HIGH">High</option>
+        <option value="MEDIUM">Medium</option>
+        <option value="LOW">Low</option>
+      </select>
+
+      <label
+        className="flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-200"
+        style={{
+          backgroundColor: "#0D1322",
+          border: "1px solid #1A2234",
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={showDismissed}
+          onChange={(e) => setShowDismissed(e.target.checked)}
+          className="w-4 h-4"
+        />
+        <span>Show Dismissed</span>
+      </label>
+
+
+
         </div>
       </div>
 
