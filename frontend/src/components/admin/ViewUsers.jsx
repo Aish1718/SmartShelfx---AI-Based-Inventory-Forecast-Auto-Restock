@@ -99,10 +99,21 @@ const ViewUsers = () => {
       await userService.deleteUser(id);
       setUsers(users.filter((u) => u.id !== id));
       toast.success("User deleted successfully");
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to delete user");
     }
+    // catch (error) {
+    //   console.error(error);
+    //   toast.error("Failed to delete user");
+    // }
+
+    catch (error) {
+    console.error("DELETE USER ERROR:", error.response || error);
+
+    toast.error(
+      error.response?.data?.message ||
+      error.response?.data?.error ||
+      "Failed to delete user"
+    );
+  }
   };
 
   return (
